@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角洲行动 - 猛攻模拟器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        game: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 min-h-screen text-white font-game">
+
+    <!-- 加载页面 -->
+    <div id="loading-screen" class="fixed inset-0 z-[100] bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 flex flex-col items-center justify-center">
+        <div class="text-center mb-8 relative">
+            <div class="absolute -inset-20 bg-emerald-500/5 rounded-full blur-3xl"></div>
+            <div class="relative">
+                <div class="text-8xl mb-6 animate-bounce drop-shadow-2xl">🐭</div>
+                <h1 class="text-5xl font-black tracking-tight mb-2">
+                    <span class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">猛攻模拟器</span>
+                </h1>
+                <p class="text-lg text-slate-500 font-medium tracking-widest uppercase">Delta Force Simulator</p>
+            </div>
+        </div>
+        <div class="w-72 bg-slate-800/60 rounded-full h-2 mb-4 overflow-hidden backdrop-blur-sm border border-slate-700/50">
+            <div id="loading-progress" class="bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-500 h-full rounded-full transition-all duration-100 shadow-[0_0_12px_rgba(16,185,129,0.4)]" style="width: 0%"></div>
+        </div>
+        <div class="text-center">
+            <span id="loading-percentage" class="text-2xl font-black text-emerald-400 tabular-nums">0%</span>
+        </div>
+        <div id="loading-tips" class="mt-4 text-slate-500 text-sm font-medium">
+            <p>正在初始化游戏引擎...</p>
+        </div>
+        <button id="loading-sound-toggle" class="mt-6 text-emerald-400/60 hover:text-emerald-300 transition-colors p-2">
+            <i class="fas fa-volume-up text-xl"></i>
+        </button>
+    </div>
+
+    <!-- 直升机飞行动画 -->
+    <div id="helicopter-animation" class="fixed inset-0 z-[90] bg-black hidden overflow-hidden">
+        <div id="helicopter-img" class="absolute text-8xl" style="opacity: 0; top: 50%; left: -300px; transform: translateX(-50%) translateY(-50%);">🚁</div>
+        <div id="flight-trail" class="absolute bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style="opacity: 0;"></div>
+        <div id="flight-text" class="absolute top-[60%] left-1/2 -translate-x-1/2 text-center" style="opacity: 0;">
+            <h2 class="text-4xl font-bold text-cyan-400 mb-2">前往零号大坝</h2>
+            <p class="text-gray-400 text-lg">正在飞往目标区域...</p>
+        </div>
+    </div>
+
+    <!-- Tip提示容器 -->
+    <div id="tip-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <!-- 特效层 -->
+    <div id="effect-layer" class="fixed inset-0 z-[70] pointer-events-none"></div>
+
+    <!-- 道具获得光效容器 -->
+    <div id="item-glow" class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none hidden">
+        <div id="glow-effect" class="w-[1152px] h-[1152px] rounded-full opacity-0"></div>
+    </div>
+
+    <!-- 标题 -->
+    <header class="relative pt-6 pb-4">
+        <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none"></div>
+        <h1 class="text-3xl md:text-4xl font-black text-center relative">
+            <span class="bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-lg">猛攻模拟器</span>
+            <div class="mt-1 h-px w-32 mx-auto bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+        </h1>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+
+        <!-- ======== 特勤处界面 ======== -->
+        <div id="special-forces-interface">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+                <!-- 左侧面板 -->
+                <div class="lg:col-span-1 space-y-4">
+                    <!-- 玩家状态 -->
+                    <div id="player-status-bar" class="game-card p-4 mb-4">
+                        <h2 class="text-lg font-bold mb-3 text-emerald-400"><i class="fas fa-user-shield mr-2"></i>玩家状态</h2>
+                        <div class="flex flex-col mb-4 space-y-3">
+                            <!-- 生命值 -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-400"><i class="fas fa-heart text-red-400 mr-1"></i>生命值 <span id="health-level-display" class="text-xs text-gray-500">Lv.1</span></span>
+                                    <span id="health-display" class="text-white font-bold">100/100</span>
+                                </div>
+                                <div class="bg-gray-700 rounded-full h-3 overflow-hidden">
+                                    <div id="health-bar" class="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full transition-all duration-300" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <!-- 护甲值 -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-400"><i class="fas fa-shield-alt text-blue-400 mr-1"></i>护甲值</span>
+                                    <span id="defense-display" class="text-white font-bold">0/0</span>
+                                </div>
+                                <div class="bg-gray-700 rounded-full h-3 overflow-hidden">
+                                    <div id="defense-bar" class="bg-transparent h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- 攻击力 & 速度 -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-700/50 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-gray-400"><i class="fas fa-crosshairs text-red-400 mr-1"></i>战斗力</div>
+                                    <div id="attack-display" class="font-bold text-white">0</div>
+                                </div>
+                                <div class="bg-gray-700/50 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-gray-400"><i class="fas fa-bolt text-yellow-400 mr-1"></i>速度 <span id="speed-level" class="text-xs text-gray-500">Lv.1</span></div>
+                                    <div id="speed-display" class="font-bold text-white">100</div>
+                                </div>
+                            </div>
+                            <!-- 等级信息 -->
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-gray-700/30 rounded p-1.5 text-center">
+                                    <span class="text-gray-400"><i class="fas fa-running mr-1"></i>逃离率 <span id="escape-level" class="text-gray-500">Lv.1</span></span>
+                                </div>
+                                <div class="bg-gray-700/30 rounded p-1.5 text-center">
+                                    <span class="text-gray-400"><i class="fas fa-eye mr-1"></i>遇敌率 <span id="enemy-level" class="text-gray-500">Lv.1</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 装备区域 -->
+                    <div>
+                        <div id="equipment-grid" class="grid grid-cols-3 gap-3">
+                            <!-- 武器 -->
+                            <div id="weapon-card" class="game-card p-3 cursor-pointer hover:border-emerald-500/60 text-center relative group" onclick="handleEquipmentClick('weapon')">
+                                <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">🔫</div>
+                                <div class="text-xs text-slate-500 mb-1 font-medium">武器</div>
+                                <div id="current-weapon" class="font-bold text-red-500 text-xs">点击装备</div>
+                            </div>
+                            <!-- 护甲 -->
+                            <div id="armor-card" class="game-card p-3 cursor-pointer hover:border-blue-500/60 text-center relative group" onclick="handleEquipmentClick('armor')">
+                                <div id="armor-repair-icon" class="absolute top-1 right-1 text-yellow-400 text-xs opacity-0 transition-opacity duration-300"><i class="fas fa-tools"></i></div>
+                                <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">🛡️</div>
+                                <div class="text-xs text-slate-500 mb-1 font-medium">护甲</div>
+                                <div id="current-armor" class="font-bold text-red-500 text-xs">点击装备</div>
+                            </div>
+                            <!-- 背包 -->
+                            <div id="backpack-card" class="game-card p-3 cursor-pointer hover:border-purple-500/60 text-center relative group" onclick="handleEquipmentClick('backpack')">
+                                <div class="text-3xl mb-1 group-hover:scale-110 transition-transform">🎒</div>
+                                <div class="text-xs text-slate-500 mb-1 font-medium">背包</div>
+                                <div id="current-backpack" class="font-bold text-red-500 text-xs">点击装备</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 功能按钮区 -->
+                    <div class="space-y-2">
+                        <button id="start-game-btn" class="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 px-6 py-3.5 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 border border-emerald-500/20">
+                            <i class="fas fa-helicopter mr-2"></i>前往零号大坝
+                        </button>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button id="upgrade-modal-btn" class="relative bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-3 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-[1.02] border border-purple-500/20">
+                                <i class="fas fa-arrow-up mr-1"></i>能力升级
+                                <span id="upgrade-notification-dot" class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full hidden animate-pulse"></span>
+                            </button>
+                            <button id="collection-btn" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-3 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-[1.02] border border-amber-500/20">
+                                <i class="fas fa-book mr-1"></i>图鉴
+                            </button>
+                            <button id="settings-btn" class="bg-slate-800 hover:bg-slate-700 px-3 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-[1.02] border border-slate-600/50">
+                                <i class="fas fa-cog mr-1"></i>设置
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 仓库哈夫币 -->
+                    <div class="game-card p-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-400 font-medium"><i class="fas fa-coins text-yellow-400 mr-2"></i>仓库哈夫币</span>
+                            <span id="warehouse-coins" class="text-yellow-400 font-black text-xl tabular-nums">1,000,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧面板：仓库 -->
+                <div class="lg:col-span-2">
+                    <div class="game-card p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold text-emerald-400">
+                                <i class="fas fa-warehouse mr-2"></i>仓库
+                                <span id="warehouse-capacity" class="text-sm text-gray-400 ml-2">(0/24)</span>
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <!-- 出售筛选 -->
+                                <div class="flex flex-wrap gap-1 text-xs">
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-white-items" checked class="w-3 h-3">
+                                        <span class="text-gray-400">白</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-green-items" checked class="w-3 h-3">
+                                        <span class="text-green-400">绿</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-blue-items" checked class="w-3 h-3">
+                                        <span class="text-blue-400">蓝</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-purple-items" class="w-3 h-3">
+                                        <span class="text-purple-400">紫</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-gold-items" class="w-3 h-3">
+                                        <span class="text-yellow-400">金</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer">
+                                        <input type="checkbox" id="sell-red-items" class="w-3 h-3">
+                                        <span class="text-red-400">红</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer ml-2">
+                                        <input type="checkbox" id="protect-upgrade-materials" class="w-3 h-3">
+                                        <span class="text-orange-400">含升级材料</span>
+                                    </label>
+                                </div>
+                                <button id="sell-warehouse-btn" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105 opacity-50 border border-slate-600/50" disabled>
+                                    <i class="fas fa-store mr-1"></i>出售
+                                </button>
+                            </div>
+                        </div>
+                        <div id="warehouse-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 min-h-[200px]">
+                            <div class="col-span-full text-center py-12 text-gray-400">
+                                <i class="fas fa-warehouse text-6xl mb-4 opacity-50"></i>
+                                <p>仓库空空如也，将背包物品撤离到这里吧！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======== 零号大坝界面 ======== -->
+        <div id="zero-dam-interface" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+                <!-- 左侧面板 -->
+                <div class="lg:col-span-1 space-y-4">
+                    <!-- 玩家状态（零号大坝版） -->
+                    <div class="game-card p-4">
+                        <h2 class="text-lg font-bold mb-3 text-cyan-400"><i class="fas fa-user-shield mr-2"></i>状态</h2>
+                        <div class="space-y-3">
+                            <!-- 生命值 -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-400"><i class="fas fa-heart text-red-400 mr-1"></i>生命值</span>
+                                    <span id="health-display-dam" class="text-white font-bold">100/100</span>
+                                </div>
+                                <div class="bg-gray-700 rounded-full h-3 overflow-hidden">
+                                    <div id="health-bar-dam" class="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full transition-all duration-300" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <!-- 护甲值 -->
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-400"><i class="fas fa-shield-alt text-blue-400 mr-1"></i>护甲值</span>
+                                    <span id="defense-display-dam" class="text-white font-bold">0/0</span>
+                                </div>
+                                <div class="bg-gray-700 rounded-full h-3 overflow-hidden">
+                                    <div id="defense-bar-dam" class="bg-transparent h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <!-- 攻击力 & 速度 -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-700/50 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-gray-400"><i class="fas fa-crosshairs text-red-400 mr-1"></i>战斗力</div>
+                                    <div id="attack-display-dam" class="font-bold text-white">0</div>
+                                </div>
+                                <div class="bg-gray-700/50 rounded-lg p-2 text-center">
+                                    <div class="text-xs text-gray-400"><i class="fas fa-bolt text-yellow-400 mr-1"></i>速度</div>
+                                    <div id="speed-display-dam" class="font-bold text-white">100</div>
+                                </div>
+                            </div>
+                            <!-- 当前装备显示（零号大坝） -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-gray-700/30 rounded p-1.5 text-center">
+                                    <div class="text-lg">🔫</div>
+                                    <div id="current-weapon-dam" class="text-xs text-gray-400 truncate">无</div>
+                                </div>
+                                <div id="armor-display-card-dam" class="bg-gray-700/30 rounded p-1.5 text-center relative">
+                                    <div class="text-lg">🛡️</div>
+                                    <div id="current-armor-dam" class="text-xs text-gray-400 truncate">无</div>
+                                </div>
+                                <div class="bg-gray-700/30 rounded p-1.5 text-center">
+                                    <div class="text-lg">🎒</div>
+                                    <div id="current-backpack-dam" class="text-xs text-gray-400 truncate">无</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 撤离进度 -->
+                    <div class="game-card p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-slate-400 font-medium"><i class="fas fa-route text-emerald-400 mr-2"></i>撤离点距离</span>
+                            <span id="distance-display" class="text-white font-bold"><span id="distance-display-right">1200米</span></span>
+                        </div>
+                        <div class="relative bg-slate-700/60 rounded-full h-2 overflow-visible">
+                            <div id="evacuate-progress" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-2 rounded-full transition-all duration-500 relative shadow-[0_0_8px_rgba(16,185,129,0.3)]" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 背包哈夫币 & 撤离按钮 -->
+                    <div class="game-card p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-slate-400 font-medium"><i class="fas fa-coins text-yellow-400 mr-2"></i>背包哈夫币</span>
+                            <span id="backpack-coins" class="text-yellow-400 font-bold">0</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="evacuate-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-3 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] border border-slate-600/50">
+                                <i class="fas fa-helicopter mr-2"></i>撤离
+                            </button>
+                            <button id="exit-game-btn" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 px-4 py-3 rounded-xl font-bold text-sm transition-all transform hover:scale-[1.02] border border-red-500/20">
+                                <i class="fas fa-door-open mr-1"></i>返回
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧面板 -->
+                <div class="lg:col-span-2 space-y-4">
+                    <!-- 宝箱区域 -->
+                    <div class="game-card p-4">
+                        <h2 class="text-lg font-bold mb-3 text-cyan-400"><i class="fas fa-box-open mr-2"></i>搜索物资</h2>
+                        <div id="chests-container" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        </div>
+                    </div>
+
+                    <!-- 背包区域 -->
+                    <div class="game-card p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-bold text-cyan-400">
+                                <i class="fas fa-backpack mr-2"></i>背包
+                                <span id="backpack-capacity" class="text-sm text-gray-400 ml-2">(0/8)</span>
+                            </h2>
+                        </div>
+                        <div id="items-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 min-h-[100px]">
+                            <div class="col-span-full text-center py-12 text-slate-400">
+                                <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
+                                <p>还没有获得任何道具，快去开启宝箱吧！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 弹窗区域 ======== -->
+
+    <!-- 道具获得弹窗 -->
+    <div id="item-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div id="modal-container" class="bg-slate-800/95 rounded-2xl p-6 max-w-sm w-full mx-4 border border-slate-600/50 scale-in shadow-2xl shadow-black/50">
+            <div class="text-center">
+                <div id="modal-item-icon" class="text-7xl mb-4">📦</div>
+                <div id="modal-item-name-container" class="mb-4 rounded-lg px-4 py-2 bg-gray-600/30">
+                    <h3 id="modal-item-name" class="text-2xl font-bold text-white"></h3>
+                </div>
+                <p class="text-yellow-400 text-2xl font-bold mb-6">
+                    <i class="fas fa-coins mr-2"></i><span id="modal-item-value">0</span> 哈夫币
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="closeModal()" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 px-6 py-3 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20">
+                        <i class="fas fa-plus mr-2"></i>拾取
+                    </button>
+                    <button onclick="discardCurrentItem()" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 px-6 py-3 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-red-500/20">
+                        <i class="fas fa-trash mr-2"></i>丢弃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-md w-full mx-4 border border-slate-700/60 shadow-2xl shadow-black/50">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white"><i class="fas fa-cog mr-2"></i>设置</h2>
+                <button id="close-settings" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- 音效设置 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-300 mb-3"><i class="fas fa-volume-up mr-2"></i>音效设置</h3>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-gray-400">音效开关</span>
+                    <button id="sound-toggle-modal" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                        <i class="fas fa-volume-up mr-1"></i>开启
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="volume-display" class="text-gray-400 text-sm min-w-[80px]">音量: 30%</span>
+                    <input id="volume-slider-modal" type="range" min="0" max="100" value="30" class="flex-1 accent-green-500">
+                </div>
+            </div>
+
+            <!-- 存档管理 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-300 mb-3"><i class="fas fa-save mr-2"></i>存档管理</h3>
+                <div id="save-status" class="text-xs text-gray-400 mb-3">暂无存档</div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="GameSave.save(true)" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 px-3 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                        <i class="fas fa-save mr-1"></i>保存
+                    </button>
+                    <button onclick="GameSave.load()" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 px-3 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                        <i class="fas fa-download mr-1"></i>读取
+                    </button>
+                    <button onclick="confirmDeleteSave()" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 px-3 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                        <i class="fas fa-trash mr-1"></i>删除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 升级弹窗 -->
+    <div id="upgrade-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-2xl w-full mx-4 border border-purple-500/30 shadow-2xl shadow-purple-500/5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-purple-400"><i class="fas fa-arrow-up mr-2"></i>能力升级</h2>
+                <button id="close-upgrade-modal" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- 生命值升级 -->
+                <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">❤️</span>
+                            <span class="font-bold text-white">生命值</span>
+                            <span id="health-level-modal" class="text-sm text-slate-500">Lv.1</span>
+                        </div>
+                        <button id="upgrade-health-btn-modal" onclick="upgradeAbility('health')" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                            <span id="health-cost-modal">50,000</span> 哈夫币
+                        </button>
+                    </div>
+                    <div class="text-sm text-slate-400">
+                        当前: <span id="health-current-modal" class="text-white">100</span> → 下一级: <span id="health-next-modal" class="text-emerald-400">105</span>
+                    </div>
+                    <div id="health-requirements-modal" class="mt-2"></div>
+                </div>
+
+                <!-- 逃离率升级 -->
+                <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🏃</span>
+                            <span class="font-bold text-white">逃离率</span>
+                            <span id="escape-level-modal" class="text-sm text-slate-500">Lv.1</span>
+                        </div>
+                        <button id="upgrade-escape-btn-modal" onclick="upgradeAbility('escape')" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                            <span id="escape-cost-modal">40,000</span> 哈夫币
+                        </button>
+                    </div>
+                    <div class="text-sm text-slate-400">
+                        当前: <span id="escape-current-modal" class="text-white">100%</span> → 下一级: <span id="escape-next-modal" class="text-emerald-400">110%</span>
+                    </div>
+                    <div id="escape-requirements-modal" class="mt-2"></div>
+                </div>
+
+                <!-- 速度升级 -->
+                <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">⚡</span>
+                            <span class="font-bold text-white">速度</span>
+                            <span id="speed-level-modal" class="text-sm text-slate-500">Lv.1</span>
+                        </div>
+                        <button id="upgrade-speed-btn-modal" onclick="upgradeAbility('speed')" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                            <span id="speed-cost-modal">30,000</span> 哈夫币
+                        </button>
+                    </div>
+                    <div class="text-sm text-slate-400">
+                        当前: <span id="speed-current-modal" class="text-white">100</span> → 下一级: <span id="speed-next-modal" class="text-emerald-400">105</span>
+                    </div>
+                    <div id="speed-requirements-modal" class="mt-2"></div>
+                </div>
+
+                <!-- 遇敌率升级 -->
+                <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🎯</span>
+                            <span class="font-bold text-white">遇敌率</span>
+                            <span id="enemy-level-modal" class="text-sm text-slate-500">Lv.1</span>
+                        </div>
+                        <button id="upgrade-enemy-btn-modal" onclick="upgradeAbility('enemy')" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                            <span id="enemy-cost-modal">60,000</span> 哈夫币
+                        </button>
+                    </div>
+                    <div class="text-sm text-slate-400">
+                        当前: <span id="enemy-current-modal" class="text-white">100%</span> → 下一级: <span id="enemy-next-modal" class="text-emerald-400">95%</span>
+                    </div>
+                    <div id="enemy-requirements-modal" class="mt-2"></div>
+                </div>
+
+                <!-- 仓库库存升级 -->
+                <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">📦</span>
+                            <span class="font-bold text-white">仓库库存</span>
+                            <span id="warehouse-level-modal" class="text-sm text-slate-500">Lv.1</span>
+                        </div>
+                        <button id="upgrade-warehouse-btn-modal" onclick="upgradeAbility('warehouse')" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-bold text-sm transition-all transform hover:scale-105">
+                            <span id="warehouse-cost-modal">35,000</span> 哈夫币
+                        </button>
+                    </div>
+                    <div class="text-sm text-slate-400">
+                        当前: <span id="warehouse-current-modal" class="text-white">24格</span> → 下一级: <span id="warehouse-next-modal" class="text-emerald-400">36格</span>
+                    </div>
+                    <div id="warehouse-requirements-modal" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 武器选择弹窗 -->
+    <div id="weapon-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-lg w-full mx-4 border border-emerald-500/30 shadow-2xl shadow-emerald-500/5 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-emerald-400"><i class="fas fa-crosshairs mr-2"></i>武器选择</h2>
+                <button onclick="closeWeaponModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3" id="weapon-list">
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const weaponList = document.getElementById('weapon-list');
+                        if (weaponList && typeof gearData !== 'undefined') {
+                            weaponList.innerHTML = gearData.weapons.map((weapon, index) => `
+                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-3xl">${weapon.icon}</span>
+                                        <div>
+                                            <div class="font-bold ${weapon.color}">${weapon.name}</div>
+                                            <div class="text-xs text-gray-400">攻击+${weapon.attack} 速度${weapon.speed} | ${weapon.rarity}</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyGear('weapon', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                                        <i class="fas fa-shopping-cart mr-1"></i>${weapon.cost.toLocaleString()}
+                                    </button>
+                                </div>
+                            `).join('');
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 护甲选择弹窗 -->
+    <div id="armor-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-lg w-full mx-4 border border-blue-500/30 shadow-2xl shadow-blue-500/5 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-blue-400"><i class="fas fa-shield-alt mr-2"></i>护甲选择</h2>
+                <button onclick="closeArmorModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3" id="armor-list">
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const armorList = document.getElementById('armor-list');
+                        if (armorList && typeof gearData !== 'undefined') {
+                            armorList.innerHTML = gearData.armors.map((armor, index) => `
+                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-3xl">${armor.icon}</span>
+                                        <div>
+                                            <div class="font-bold ${armor.color}">${armor.name}</div>
+                                            <div class="text-xs text-gray-400">护甲+${armor.defense} 速度${armor.speed} | ${armor.rarity}</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyGear('armor', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                                        <i class="fas fa-shopping-cart mr-1"></i>${armor.cost.toLocaleString()}
+                                    </button>
+                                </div>
+                            `).join('');
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 背包选择弹窗 -->
+    <div id="backpack-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-lg w-full mx-4 border border-purple-500/30 shadow-2xl shadow-purple-500/5 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-purple-400"><i class="fas fa-backpack mr-2"></i>背包选择</h2>
+                <button onclick="closeBackpackModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3" id="backpack-list">
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const backpackList = document.getElementById('backpack-list');
+                        if (backpackList && typeof gearData !== 'undefined') {
+                            backpackList.innerHTML = gearData.backpacks.map((backpack, index) => `
+                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-3xl">${backpack.icon}</span>
+                                        <div>
+                                            <div class="font-bold ${backpack.color}">${backpack.name}</div>
+                                            <div class="text-xs text-gray-400">容量+${backpack.capacity} 速度${backpack.speed} | ${backpack.rarity}</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="buyGear('backpack', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                                        <i class="fas fa-shopping-cart mr-1"></i>${backpack.cost.toLocaleString()}
+                                    </button>
+                                </div>
+                            `).join('');
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图鉴弹窗 -->
+    <div id="collection-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900/95 rounded-2xl p-6 max-w-4xl w-full mx-4 border border-amber-500/30 shadow-2xl shadow-amber-500/5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-amber-400"><i class="fas fa-book mr-2"></i>物品图鉴</h2>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-sm text-gray-400">收集进度: <span id="collection-progress-text">0/0</span></span>
+                        <span id="collection-total-percentage" class="text-sm text-amber-400">0%</span>
+                    </div>
+                    <div class="w-48 bg-gray-700 rounded-full h-2 mt-1 overflow-hidden">
+                        <div id="collection-progress-bar" class="bg-gradient-to-r from-amber-500 to-orange-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+                <button id="close-collection" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- 红色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-red-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-gem mr-2"></i>红色品质</span>
+                    <span id="red-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="red-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+
+            <!-- 金色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-yellow-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-crown mr-2"></i>金色品质</span>
+                    <span id="gold-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="gold-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+
+            <!-- 紫色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-purple-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-star mr-2"></i>紫色品质</span>
+                    <span id="purple-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="purple-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+
+            <!-- 蓝色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-blue-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-shield-alt mr-2"></i>蓝色品质</span>
+                    <span id="blue-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="blue-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+
+            <!-- 绿色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-green-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-leaf mr-2"></i>绿色品质</span>
+                    <span id="green-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="green-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+
+            <!-- 白色品质 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-400 mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-circle mr-2"></i>白色品质</span>
+                    <span id="white-progress" class="text-sm text-gray-400">0/0</span>
+                </h3>
+                <div id="white-items" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>
