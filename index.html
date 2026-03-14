@@ -1,30 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三角洲行动 - 猛攻模拟器</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        game: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- 自定义样式 -->
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>三角洲行动 - 猛攻模拟器</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐭</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/src/styles/tailwind-generated.css">
+  <link rel="stylesheet" href="/src/styles/game.css">
 </head>
 <body class="bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950 min-h-screen text-white font-game">
 
@@ -408,8 +394,8 @@
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span id="volume-display" class="text-gray-400 text-sm min-w-[80px]">音量: 30%</span>
-                    <input id="volume-slider-modal" type="range" min="0" max="100" value="30" class="flex-1 accent-green-500">
+                    <span id="volume-display" class="text-gray-400 text-sm min-w-[80px]">音量: 15%</span>
+                    <input id="volume-slider-modal" type="range" min="0" max="100" value="15" class="flex-1 accent-green-500">
                 </div>
             </div>
 
@@ -541,29 +527,7 @@
                 <h2 class="text-xl font-bold text-emerald-400"><i class="fas fa-crosshairs mr-2"></i>武器选择</h2>
                 <button onclick="closeWeaponModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
             </div>
-            <div class="space-y-3" id="weapon-list">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const weaponList = document.getElementById('weapon-list');
-                        if (weaponList && typeof gearData !== 'undefined') {
-                            weaponList.innerHTML = gearData.weapons.map((weapon, index) => `
-                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-3xl">${weapon.icon}</span>
-                                        <div>
-                                            <div class="font-bold ${weapon.color}">${weapon.name}</div>
-                                            <div class="text-xs text-gray-400">攻击+${weapon.attack} 速度${weapon.speed} | ${weapon.rarity}</div>
-                                        </div>
-                                    </div>
-                                    <button onclick="buyGear('weapon', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
-                                        <i class="fas fa-shopping-cart mr-1"></i>${weapon.cost.toLocaleString()}
-                                    </button>
-                                </div>
-                            `).join('');
-                        }
-                    });
-                </script>
-            </div>
+            <div class="space-y-3" id="weapon-list"></div>
         </div>
     </div>
 
@@ -574,29 +538,7 @@
                 <h2 class="text-xl font-bold text-blue-400"><i class="fas fa-shield-alt mr-2"></i>护甲选择</h2>
                 <button onclick="closeArmorModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
             </div>
-            <div class="space-y-3" id="armor-list">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const armorList = document.getElementById('armor-list');
-                        if (armorList && typeof gearData !== 'undefined') {
-                            armorList.innerHTML = gearData.armors.map((armor, index) => `
-                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-3xl">${armor.icon}</span>
-                                        <div>
-                                            <div class="font-bold ${armor.color}">${armor.name}</div>
-                                            <div class="text-xs text-gray-400">护甲+${armor.defense} 速度${armor.speed} | ${armor.rarity}</div>
-                                        </div>
-                                    </div>
-                                    <button onclick="buyGear('armor', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
-                                        <i class="fas fa-shopping-cart mr-1"></i>${armor.cost.toLocaleString()}
-                                    </button>
-                                </div>
-                            `).join('');
-                        }
-                    });
-                </script>
-            </div>
+            <div class="space-y-3" id="armor-list"></div>
         </div>
     </div>
 
@@ -607,29 +549,7 @@
                 <h2 class="text-xl font-bold text-purple-400"><i class="fas fa-backpack mr-2"></i>背包选择</h2>
                 <button onclick="closeBackpackModal()" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
             </div>
-            <div class="space-y-3" id="backpack-list">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const backpackList = document.getElementById('backpack-list');
-                        if (backpackList && typeof gearData !== 'undefined') {
-                            backpackList.innerHTML = gearData.backpacks.map((backpack, index) => `
-                                <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-3xl">${backpack.icon}</span>
-                                        <div>
-                                            <div class="font-bold ${backpack.color}">${backpack.name}</div>
-                                            <div class="text-xs text-gray-400">容量+${backpack.capacity} 速度${backpack.speed} | ${backpack.rarity}</div>
-                                        </div>
-                                    </div>
-                                    <button onclick="buyGear('backpack', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
-                                        <i class="fas fa-shopping-cart mr-1"></i>${backpack.cost.toLocaleString()}
-                                    </button>
-                                </div>
-                            `).join('');
-                        }
-                    });
-                </script>
-            </div>
+            <div class="space-y-3" id="backpack-list"></div>
         </div>
     </div>
 
@@ -706,7 +626,6 @@
         </div>
     </div>
 
-    <!-- 游戏脚本 -->
-    <script src="script.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

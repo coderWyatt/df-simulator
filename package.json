@@ -1,0 +1,14 @@
+{
+  "name": "delta-force-simulator",
+  "version": "1.0.0",
+  "description": "三角洲行动猛攻模拟器",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}

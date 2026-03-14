@@ -1,3 +1,13 @@
+// ===== 数据导入 =====
+import { crisisEnemies } from './data/enemies.js';
+import { gearData, GEAR_PRICES } from './data/gear.js';
+import { chestConfig } from './data/chests.js';
+import { randomEvents } from './data/events.js';
+import { itemDatabase } from './data/items.js';
+import { upgradeRequirements } from './data/upgrades.js';
+import './styles/tailwind-generated.css';
+import './styles/game.css';
+
 // 加载页面管理器
 class LoadingScreen {
     constructor() {
@@ -156,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 class SoundManager {
     constructor() {
         this.sounds = {};
-        this.volume = 0.3; // 默认音量
+        this.volume = 0.15; // 默认音量
         this.enabled = true; // 音效开关
         this.ambientTimer = null; // 环境音效定时器
         this.activeOscillators = []; // 跟踪活跃的音效振荡器
@@ -400,6 +410,7 @@ class SoundManager {
 
 // 创建全局音效管理器实例
 const soundManager = new SoundManager();
+window.soundManager = soundManager;
 
 // 显示提示信息的函数
 function showTip(message, type = 'info') {
@@ -617,60 +628,8 @@ let playerGear = {
 };
 
 // 查看文件开头部分
-const crisisEnemies = [
-    // 白色品质 - 基础敌人
-    { name: "跑刀仔", icon: "🔪", attack: 8, baseAttack: 5, maxAttack: 12, escapeChance: 0.85, description: "手持小刀的快速突击手，移动迅速但防御薄弱" },
-    { name: "阿萨拉士兵", icon: "👤", attack: 10, baseAttack: 7, maxAttack: 15, escapeChance: 0.82, description: "阿萨拉组织的标准步兵，装备基础武器" },
-    { name: "哈夫克士兵", icon: "🪖", attack: 9, baseAttack: 6, maxAttack: 13, escapeChance: 0.84, description: "哈夫克集团的正规军，训练有素" },
-    { name: "人机哈基蜂", icon: "🐝", attack: 7, baseAttack: 4, maxAttack: 11, escapeChance: 0.88, description: "AI控制的蜂群无人机，数量多但单体脆弱" },
-    { name: "幸运鼠鼠", icon: "🐭", attack: 11, baseAttack: 8, maxAttack: 16, escapeChance: 0.80, description: "运气极好的侦察兵，总能找到战利品" },
-    
-    // 绿色品质 - 标准敌人
-    { name: "制式套鼠鼠", icon: "🐭", attack: 18, baseAttack: 15, maxAttack: 25, escapeChance: 0.70, description: "装备标准制式装备的精英鼠鼠战士" },
-    { name: "麦小鼠同行", icon: "🐹", attack: 20, baseAttack: 17, maxAttack: 28, escapeChance: 0.68, description: "成对行动的麦小鼠组合，配合默契" },
-    { name: "哈夫克盾兵", icon: "🛡️", attack: 22, baseAttack: 18, maxAttack: 30, escapeChance: 0.65, description: "装备重型防弹盾的哈夫克特种部队" },
-    { name: "阿萨拉盾兵", icon: "🛡️", attack: 19, baseAttack: 16, maxAttack: 26, escapeChance: 0.69, description: "阿萨拉组织的重装防御单位" },
-    { name: "阴暗爬行鼠鼠", icon: "🦎", attack: 21, baseAttack: 18, maxAttack: 29, escapeChance: 0.67, description: "擅长隐蔽和伏击的特种鼠鼠" },
-    
-    // 蓝色品质 - 精英敌人
-    { name: "哈夫克机枪兵", icon: "🔫", attack: 35, baseAttack: 30, maxAttack: 45, escapeChance: 0.55, description: "装备重机枪的哈夫克火力支援单位" },
-    { name: "阿萨拉机枪兵", icon: "🔫", attack: 38, baseAttack: 33, maxAttack: 48, escapeChance: 0.52, description: "阿萨拉的重型机枪手，压制火力极强" },
-    { name: "哈夫克喷火兵", icon: "🔥", attack: 40, baseAttack: 35, maxAttack: 50, escapeChance: 0.50, description: "装备火焰喷射器的哈夫克特种兵种" },
-    { name: "阿萨拉喷火兵", icon: "🔥", attack: 42, baseAttack: 37, maxAttack: 52, escapeChance: 0.48, description: "阿萨拉的火焰兵，擅长清场作战" },
-    { name: "幽默静步男无名", icon: "🚶", attack: 45, baseAttack: 40, maxAttack: 55, escapeChance: 0.45, description: "神秘的静步高手，行动无声无息" },
-    { name: "哈夫克狙击兵", icon: "🎯", attack: 43, baseAttack: 38, maxAttack: 53, escapeChance: 0.47, description: "哈夫克的精英狙击手，一击必杀" },
-    { name: "阿萨拉火箭兵", icon: "🚀", attack: 41, baseAttack: 36, maxAttack: 51, escapeChance: 0.49, description: "装备火箭筒的阿萨拉重火力单位" },
-    
-    // 紫色品质 - 高级敌人
-    { name: "渡鸦", icon: "🦅", attack: 60, baseAttack: 55, maxAttack: 75, escapeChance: 0.35, description: "神秘的空中侦察单位，机动性极强" },
-    { name: "赛伊德", icon: "👤", attack: 65, baseAttack: 60, maxAttack: 80, escapeChance: 0.32, description: "传说中的精英战士，战斗力爆表" },
-    { name: "曼巴肘击王雷斯", icon: "💪", attack: 62, baseAttack: 57, maxAttack: 77, escapeChance: 0.34, description: "近战格斗专家，肘击威力惊人" },
-    { name: "超雄老太", icon: "👵", attack: 58, baseAttack: 53, maxAttack: 73, escapeChance: 0.36, description: "看似无害实则危险的老太，爆发力惊人" },
-    { name: "蓝鹰直升机", icon: "🚁", attack: 68, baseAttack: 63, maxAttack: 83, escapeChance: 0.30, description: "重型武装直升机，空中火力支援" },
-    
-    // 金色品质 - 顶级敌人
-    { name: "红皮花来", icon: "🌸", attack: 85, baseAttack: 80, maxAttack: 100, escapeChance: 0.20, description: "传说中的红色精英，实力深不可测" },
-    { name: "单三威龙", icon: "🐉", attack: 90, baseAttack: 85, maxAttack: 105, escapeChance: 0.18, description: "单人成军的威龙战士，战斗力爆表" },
-    { name: "坝顶乌鲁鲁", icon: "🏔️", attack: 88, baseAttack: 83, maxAttack: 103, escapeChance: 0.19, description: "占据制高点的乌鲁鲁狙击手" },
-    { name: "堵桥乌鲁鲁", icon: "🌉", attack: 92, baseAttack: 87, maxAttack: 107, escapeChance: 0.17, description: "封锁桥梁的乌鲁鲁重装兵" },
-    { name: "三盾狗", icon: "🐕", attack: 87, baseAttack: 82, maxAttack: 102, escapeChance: 0.21, description: "装备三重护盾的机械战犬" },
-    { name: "M14大人", icon: "🔫", attack: 95, baseAttack: 90, maxAttack: 110, escapeChance: 0.15, description: "传说中的M14步枪大师，百发百中" },
-    
-    // 红色品质 - 终极敌人
-    { name: "刘涛全装队", icon: "👥", attack: 120, baseAttack: 110, maxAttack: 150, escapeChance: 0.08, description: "刘涛率领的满配精英小队，战力恐怖" },
-    { name: "佐娅护航队", icon: "🛡️", attack: 125, baseAttack: 115, maxAttack: 155, escapeChance: 0.06, description: "佐娅指挥的护航编队，防御无懈可击" },
-    { name: "天才少年", icon: "🧠", attack: 130, baseAttack: 120, maxAttack: 160, escapeChance: 0.05, description: "智商超群的战术天才，预判所有行动" },
-    { name: "寻血猎犬", icon: "🐕", attack: 135, baseAttack: 125, maxAttack: 165, escapeChance: 0.04, description: "永不放弃的追踪者，一旦锁定不死不休" },
-    { name: "清图主播队", icon: "📺", attack: 140, baseAttack: 130, maxAttack: 170, escapeChance: 0.03, description: "直播清图的职业战队，配合完美无瑕" },
-    { name: "巅峰5000星威龙", icon: "⭐", attack: 150, baseAttack: 140, maxAttack: 200, escapeChance: 0.02, description: "达到5000星巅峰的威龙，传说中的存在" }
-];
 
 // 装备价格配置 - 与卡牌显示价格一致
-const GEAR_PRICES = {
-    weapon: [10000, 20000, 40000, 80000, 150000, 300000],
-    armor: [15000, 30000, 60000, 120000, 250000, 500000],
-    backpack: [10000, 20000, 40000, 80000, 160000, 320000]
-};
 
 // 修改游戏状态 - 添加速度属性
 let gameState = {
@@ -895,888 +854,10 @@ function calculatePlayerSpeed() {
 }
 
 // 简化的宝箱配置 - 去除特殊容器设定
-const chestConfig = {
-    // 红色品质 - 最高级
-    safe: {
-        name: "保险柜",
-        icon: "🗄️",
-        cost: 100000,
-        appearanceChance: 0.02,
-        rates: { red: 0.15, gold: 0.25, purple: 0.25, blue: 0.20, green: 0.10, white: 0.05 },
-        color: "red",
-        rarity: "legendary",
-        crisisChance: 0.90
-    },
-    
-    small_safe: {
-        name: "小保险箱",
-        icon: "🔐",
-        cost: 85000,
-        appearanceChance: 0.03,
-        rates: { red: 0.10, gold: 0.20, purple: 0.25, blue: 0.25, green: 0.15, white: 0.05 },
-        color: "red",
-        rarity: "legendary",
-        crisisChance: 0.85
-    },
-    
-    server: {
-        name: "服务器",
-        icon: "🖥️",
-        cost: 90000,
-        appearanceChance: 0.025,
-        rates: { red: 0.08, gold: 0.18, purple: 0.25, blue: 0.25, green: 0.18, white: 0.06 },
-        color: "red",
-        rarity: "legendary",
-        crisisChance: 0.88
-    },
-    
-    computer: {
-        name: "电脑",
-        icon: "💻",
-        cost: 80000,
-        appearanceChance: 0.035,
-        rates: { red: 0.06, gold: 0.15, purple: 0.22, blue: 0.28, green: 0.20, white: 0.09 },
-        color: "red",
-        rarity: "legendary",
-        crisisChance: 0.82
-    },
-    
-    // 金色品质 - 史诗级
-    computer_case: {
-        name: "电脑机箱",
-        icon: "🖱️",
-        cost: 75000,
-        appearanceChance: 0.05,
-        rates: { red: 0.15, gold: 0.30, purple: 0.35, blue: 0.15, green: 0.04, white: 0.01 },
-        color: "gold",
-        rarity: "epic",
-        crisisChance: 0.80
-    },
-    
-    aviation_storage: {
-        name: "航空储物箱",
-        icon: "✈️",
-        cost: 70000,
-        appearanceChance: 0.06,
-        rates: { red: 0.12, gold: 0.28, purple: 0.35, blue: 0.18, green: 0.06, white: 0.01 },
-        color: "gold",
-        rarity: "epic",
-        crisisChance: 0.78
-    },
-    
-    medical_supplies_pile: {
-        name: "医疗物资堆",
-        icon: "🏥",
-        cost: 65000,
-        appearanceChance: 0.07,
-        rates: { red: 0.05, gold: 0.15, purple: 0.25, blue: 0.25, green: 0.20, white: 0.10 },
-        color: "gold",
-        rarity: "epic",
-        crisisChance: 0.75
-    },
-    
-    airdrop_box: {
-        name: "空投箱",
-        icon: "📦",
-        cost: 60000,
-        appearanceChance: 0.08,
-        rates: { red: 0.04, gold: 0.12, purple: 0.22, blue: 0.30, green: 0.25, white: 0.07 },
-        color: "gold",
-        rarity: "epic",
-        crisisChance: 0.72
-    },
-    
-    // 紫色品质 - 稀有级
-    advanced_storage: {
-        name: "高级储物箱",
-        icon: "📦",
-        cost: 35000,
-        appearanceChance: 0.10,
-        rates: { red: 0.03, gold: 0.10, purple: 0.20, blue: 0.30, green: 0.30, white: 0.07 },
-        color: "purple",
-        rarity: "rare",
-        crisisChance: 0.65
-    },
-    
-    advanced_travel_case: {
-        name: "高级旅行箱",
-        icon: "🧳",
-        cost: 32000,
-        appearanceChance: 0.11,
-        rates: { red: 0.07, gold: 0.18, purple: 0.35, blue: 0.28, green: 0.10, white: 0.02 },
-        color: "purple",
-        rarity: "rare",
-        crisisChance: 0.63
-    },
-    
-    suitcase: {
-        name: "手提箱",
-        icon: "💼",
-        cost: 30000,
-        appearanceChance: 0.12,
-        rates: { red: 0.06, gold: 0.16, purple: 0.35, blue: 0.30, green: 0.10, white: 0.03 },
-        color: "purple",
-        rarity: "rare",
-        crisisChance: 0.60
-    },
-    
-    medical_kit: {
-        name: "医疗包",
-        icon: "💊",
-        cost: 28000,
-        appearanceChance: 0.13,
-        rates: { red: 0.05, gold: 0.15, purple: 0.30, blue: 0.35, green: 0.12, white: 0.03 },
-        color: "purple",
-        rarity: "rare",
-        crisisChance: 0.58
-    },
-    
-    cement_truck: {
-        name: "水泥车",
-        icon: "🚛",
-        cost: 25000,
-        appearanceChance: 0.14,
-        rates: { red: 0.04, gold: 0.12, purple: 0.28, blue: 0.40, green: 0.14, white: 0.02 },
-        color: "purple",
-        rarity: "rare",
-        crisisChance: 0.55
-    },
-    
-    // 蓝色品质 - 精良级
-    lab_coat: {
-        name: "实验服",
-        icon: "🥼",
-        cost: 15000,
-        appearanceChance: 0.18,
-        rates: { red: 0.01, gold: 0.05, purple: 0.15, blue: 0.35, green: 0.30, white: 0.14 },
-        color: "blue",
-        rarity: "uncommon",
-        crisisChance: 0.45
-    },
-    
-    weapon_box: {
-        name: "武器箱",
-        icon: "🔫",
-        cost: 14000,
-        appearanceChance: 0.19,
-        rates: { red: 0.008, gold: 0.04, purple: 0.12, blue: 0.35, green: 0.30, white: 0.13 },
-        color: "blue",
-        rarity: "uncommon",
-        crisisChance: 0.43
-    },
-    
-    hiking_bag: {
-        name: "登山包",
-        icon: "🎒",
-        cost: 13000,
-        appearanceChance: 0.20,
-        rates: { red: 0.006, gold: 0.03, purple: 0.10, blue: 0.32, green: 0.35, white: 0.14 },
-        color: "blue",
-        rarity: "uncommon",
-        crisisChance: 0.40
-    },
-    
-    tool_box: {
-        name: "工具盒",
-        icon: "🔧",
-        cost: 12000,
-        appearanceChance: 0.21,
-        rates: { red: 0.012, gold: 0.05, purple: 0.15, blue: 0.50, green: 0.23, white: 0.05 },
-        color: "blue",
-        rarity: "uncommon",
-        crisisChance: 0.38
-    },
-    
-    drawer_cabinet: {
-        name: "抽屉柜",
-        icon: "🗄️",
-        cost: 10000,
-        appearanceChance: 0.22,
-        rates: { red: 0.01, gold: 0.04, purple: 0.12, blue: 0.45, green: 0.30, white: 0.08 },
-        color: "blue",
-        rarity: "uncommon",
-        crisisChance: 0.35
-    },
-    
-    // 绿色品质 - 普通级
-    ammo_crate: {
-        name: "弹药箱",
-        icon: "🎯",
-        cost: 5000,
-        appearanceChance: 0.25,
-        rates: { red: 0.005, gold: 0.02, purple: 0.08, blue: 0.30, green: 0.40, white: 0.20 },
-        color: "green",
-        rarity: "common",
-        crisisChance: 0.25
-    },
-    
-    tool_cabinet: {
-        name: "工具柜",
-        icon: "🧰",
-        cost: 4500,
-        appearanceChance: 0.27,
-        rates: { red: 0.002, gold: 0.01, purple: 0.05, blue: 0.20, green: 0.45, white: 0.29 },
-        color: "green",
-        rarity: "common",
-        crisisChance: 0.23
-    },
-    
-    storage_locker: {
-        name: "收纳盒",
-        icon: "🗄️",
-        cost: 4000,
-        appearanceChance: 0.28,
-        rates: { red: 0.001, gold: 0.008, purple: 0.04, blue: 0.18, green: 0.45, white: 0.32 },
-        color: "green",
-        rarity: "common",
-        crisisChance: 0.22
-    },
-    
-    trash_bin: {
-        name: "垃圾箱",
-        icon: "🗑️",
-        cost: 3500,
-        appearanceChance: 0.30,
-        rates: { red: 0.001, gold: 0.005, purple: 0.03, blue: 0.15, green: 0.45, white: 0.36 },
-        color: "green",
-        rarity: "common",
-        crisisChance: 0.20
-    },
-    
-    field_supplies: {
-        name: "野外物资箱",
-        icon: "📦",
-        cost: 3000,
-        appearanceChance: 0.32,
-        rates: { red: 0.001, gold: 0.005, purple: 0.02, blue: 0.12, green: 0.45, white: 0.40 },
-        color: "green",
-        rarity: "common",
-        crisisChance: 0.20
-    },
-    
-    // 白色品质 - 最低级
-    express_box: {
-        name: "快递箱",
-        icon: "📦",
-        cost: 1000,
-        appearanceChance: 0.40,
-        rates: { red: 0.0002, gold: 0.002, purple: 0.01, blue: 0.08, green: 0.40, white: 0.51 },
-        color: "white",
-        rarity: "trash",
-        crisisChance: 0.20
-    },
-    
-    travel_bag: {
-        name: "旅行袋",
-        icon: "🧳",
-        cost: 800,
-        appearanceChance: 0.42,
-        rates: { red: 0.0003, gold: 0.003, purple: 0.015, blue: 0.12, green: 0.58, white: 0.283 },
-        color: "white",
-        rarity: "trash",
-        crisisChance: 0.20
-    },
-    
-    clothes: {
-        name: "衣服",
-        icon: "👕",
-        cost: 500,
-        appearanceChance: 0.45,
-        rates: { red: 0.0001, gold: 0.001, purple: 0.005, blue: 0.05, green: 0.35, white: 0.59 },
-        color: "white",
-        rarity: "trash",
-        crisisChance: 0.20
-    },
-    
-    manhole_cover: {
-        name: "井盖",
-        icon: "⚙️",
-        cost: 300,
-        appearanceChance: 0.48,
-        rates: { red: 0.00005, gold: 0.0005, purple: 0.003, blue: 0.03, green: 0.30, white: 0.666 },
-        color: "white",
-        rarity: "trash",
-        crisisChance: 0.20
-    },
-    
-    bird_nest: {
-        name: "鸟窝",
-        icon: "🪹",
-        cost: 200,
-        appearanceChance: 0.50,
-        rates: { red: 0.00001, gold: 0.0003, purple: 0.002, blue: 0.02, green: 0.25, white: 0.72769 },
-        color: "white",
-        rarity: "trash",
-        crisisChance: 0.15
-    }
-};
 
 // 搞笑随机事件 - 基于三角洲行动角色的搞笑事件
-const randomEvents = [
-    // 哈夫币相关事件
-    {
-        name: "蜂医的医疗费",
-        description: "蜂医给你做了个全身检查，然后开出天价医疗费单子：'你的钱包需要紧急手术！'",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🩺"
-    },
-    {
-        name: "麦晓雯的直播打赏",
-        description: "麦晓雯在直播开箱，你疯狂刷礼物想要好运加持，结果她说：'谢谢老板，但运气不能充值哦~'",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "📱"
-    },
-    {
-        name: "乌鲁鲁的保护费",
-        description: "乌鲁鲁拦住你的去路：'想从这里过？先交保护费！'你只能乖乖掏钱包",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🏔️"
-    },
-    {
-        name: "佐娅的护航服务",
-        description: "佐娅主动与你分享护航服务，但事后要收取'专业护航费'，价格比你想象的贵多了",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🛡️"
-    },
-    {
-        name: "疾风的快递费",
-        description: "疾风帮你快递装备，但他的'闪电快递'收费标准让你怀疑人生",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "⚡"
-    },
-    {
-        name: "红狼的花来夺舍",
-        description: "你被躲在箱子后面的红狼使用G18无情扫腿并花来，钱包瞬间被掏空",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🐺"
-    },
-    {
-        name: "盾狗的维修费",
-        description: "盾狗的盾牌被你不小心撞坏了，它要求你赔偿'高科技盾牌维修费'",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🛡️"
-    },
-    {
-        name: "老黑的神秘交易",
-        description: "老黑神秘兮兮地说要和你做笔'大买卖'，结果是卖给你一张过期的彩票",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🎫"
-    },
-    {
-        name: "露娜的侦察费",
-        description: "露娜作为精英侦察兵，声称你进入了她的侦察区域需要缴纳'侦察费'，理由是她的侦察箭为你提供了安全保障",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "⚡"
-    },
-    {
-        name: "乌鲁鲁堵桥的过桥费",
-        description: "三个乌鲁鲁拿着火箭筒瞄准你：'此桥是我开，此树是我栽，要想从此过，留下买路财！'",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🌉"
-    },
-    {
-        name: "幸运鼠鼠的赌局",
-        description: "幸运鼠鼠邀请你参加'必赢'赌局，结果它的运气好到让你怀疑鼠生",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🎰"
-    },
-    {
-        name: "制式套鼠鼠的团购",
-        description: "制式套鼠鼠们组团向你推销'限量版制式装备'，价格贵得离谱但你还是买了",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🛒"
-    },
-    {
-        name: "同行麦小鼠的比赛",
-        description: "同行麦小鼠和你比赛开箱，输了要请客吃饭，结果她选了最贵的餐厅",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🍽️"
-    },
-    {
-        name: "哈夫克盾兵的停车费",
-        description: "哈夫克盾兵说你的载具停在了他们的'专属停车位'，要收取天价停车费",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🅿️"
-    },
-    {
-        name: "阿萨拉盾兵的罚款",
-        description: "阿萨拉盾兵以'违反战区交通规则'为由给你开了张巨额罚单",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "🚔"
-    },
-    {
-        name: "雷斯的肘击",
-        description: "雷斯一个肘击，你的钱包飞了",
-        effect: "lose",
-        amount: Math.floor(Math.random() * 45000) + 5000,
-        icon: "👊"
-    },
-    // 获得哈夫币事件
-    {
-        name: "蜂医的意外收获",
-        description: "蜂医在给你治疗时意外发现你身上藏着的私房钱，作为'医疗奖励'还给了你",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "💰"
-    },
-    {
-        name: "麦晓雯的幸运加持",
-        description: "麦晓雯看你可怜，施展了'欧皇光环'，你突然发现地上有一袋哈夫币",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "✨"
-    },
-    {
-        name: "威龙的慷慨解囊",
-        description: "威龙心情大好，决定请客：'今天我请客，大家随便花！'然后给了你一大笔钱",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "🎉"
-    },
-    {
-        name: "佐娅的护航奖励",
-        description: "佐娅对你的表现很满意，给了你一笔'优秀护航奖励金'",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "🏆"
-    },
-    {
-        name: "疾风的快递补偿",
-        description: "疾风承认之前收费太贵了，主动退还了'超额快递费'并加了利息",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "📦"
-    },
-    {
-        name: "红狼的良心发现",
-        description: "红狼突然良心发现，把之前花来的钱都还给你，还额外加了'精神损失费'",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "❤️"
-    },
-    {
-        name: "盾狗的保险赔付",
-        description: "盾狗的保险公司认定之前的事故不是你的责任，给了你一笔赔偿金",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "📋"
-    },
-    {
-        name: "老黑的神秘礼物",
-        description: "老黑神秘地给你一个盒子：'这次是真的好东西！'打开一看全是哈夫币",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "🎁"
-    },
-    {
-        name: "露娜的电箭精准赏金",
-        description: "露娜作为神射手侦察兵，用她的电箭精准命中了一个高价值目标，将战利品分给了你",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "🏹"
-    },
-    {
-        name: "跑刀仔的义气相助",
-        description: "跑刀仔看你落魄，义气地把自己的积蓄分给你一半：'兄弟有难，必须帮忙！'",
-        effect: "gain",
-        amount: Math.floor(Math.random() * 90000) + 10000,
-        icon: "🤝"
-    },
-    // 距离相关事件
-    {
-        name: "阴暗爬行鼠鼠的迷路",
-        description: "阴暗爬行鼠鼠带错了路，你们在下水道里转了好久才找到正确方向",
-        effect: "distance_increase",
-        amount: Math.floor(Math.random() * 151) + 50,
-        icon: "🐭"
-    },
-    {
-        name: "哈夫克机枪兵的封锁",
-        description: "哈夫克机枪兵在前方设置了检查点，你只能绕远路避开他们的火力网",
-        effect: "distance_increase",
-        amount: Math.floor(Math.random() * 151) + 50,
-        icon: "🔫"
-    },
-    {
-        name: "阿萨拉机枪兵的追击",
-        description: "阿萨拉机枪兵发现了你的踪迹，你只能拼命逃跑，结果跑过头了",
-        effect: "distance_increase",
-        amount: Math.floor(Math.random() * 151) + 50,
-        icon: "🏃"
-    },
-    {
-        name: "哈夫克喷火兵的火墙",
-        description: "哈夫克喷火兵在路上喷了一道火墙，你只能等火熄灭或者绕路走",
-        effect: "distance_increase",
-        amount: Math.floor(Math.random() * 151) + 50,
-        icon: "🔥"
-    },
-    {
-        name: "阿萨拉喷火兵的烟雾",
-        description: "阿萨拉喷火兵释放了大量烟雾，你在烟雾中迷失了方向",
-        effect: "distance_increase",
-        amount: Math.floor(Math.random() * 151) + 50,
-        icon: "💨"
-    },
-    {
-        name: "幽默静步男无名的捷径",
-        description: "幽默静步男无名悄悄告诉你一条秘密通道，让你少走了很多弯路",
-        effect: "distance_decrease",
-        amount: Math.floor(Math.random() * 201) + 100,
-        icon: "🤫"
-    },
-    {
-        name: "哈夫克狙击兵的指路",
-        description: "哈夫克狙击兵从制高点为你指明了最短路径，节省了不少时间",
-        effect: "distance_decrease",
-        amount: Math.floor(Math.random() * 201) + 100,
-        icon: "🎯"
-    },
-    {
-        name: "阿萨拉火箭兵的清障",
-        description: "阿萨拉火箭兵用火箭弹炸开了前方的障碍物，为你开辟了一条直路",
-        effect: "distance_decrease",
-        amount: Math.floor(Math.random() * 201) + 100,
-        icon: "🚀"
-    },
-    {
-        name: "渡鸦的护航",
-        description: "渡鸦的锤哥兄弟为你开路，让你避开了所有弯路",
-        effect: "distance_decrease",
-        amount: Math.floor(Math.random() * 201) + 100,
-        icon: "🦅"
-    },
-    {
-        name: "赛伊德的踹门",
-        description: "赛伊德帮你踹开了一个锁住的门，瞬间缩短了撤离点距离",
-        effect: "distance_decrease",
-        amount: Math.floor(Math.random() * 201) + 100,
-        icon: "🌀"
-    },
-    // 生命值和护甲相关事件
-    {
-        name: "曼巴肘击王雷斯的治疗",
-        description: "曼巴肘击王雷斯用肘击治好了你的肩周炎，虽然过程有点疼",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "💪"
-    },
-    {
-        name: "超雄老太的秘制药膏",
-        description: "超雄老太给你涂了她的秘制药膏，伤口瞬间愈合，体力大增",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "👵"
-    },
-    {
-        name: "蓝鹰直升机的医疗包",
-        description: "蓝鹰直升机空掉了一个医疗包，里面的药品让你精神焕发",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "🚁"
-    },
-    {
-        name: "哈基蜂的好心治疗",
-        description: "偶遇的好心哈基峰不小心给你打了一发治疗针，疼得你差点刀了他",
-        effect: "health_decrease",
-        amount: Math.floor(Math.random() * 11) + 10,
-        icon: "🐝"
-    },
-    {
-        name: "单三威龙的训练邀请",
-        description: "单三威龙邀请你参加'友谊切磋'，结果他下手有点重",
-        effect: "health_decrease",
-        amount: Math.floor(Math.random() * 11) + 10,
-        icon: "🐉"
-    },
-    {
-        name: "坝顶乌鲁鲁的护甲升级",
-        description: "坝顶乌鲁鲁看你的护甲太破了，免费帮你升级了一下",
-        effect: "armor_increase",
-        amount: Math.floor(Math.random() * 51) + 10,
-        icon: "🏔️"
-    },
-    {
-        name: "清图主播队的扶贫",
-        description: "清图主播队发现你一个人躲在角落，于是给了你一个修甲包",
-        effect: "armor_increase",
-        amount: Math.floor(Math.random() * 51) + 10,
-        icon: "🌉"
-    },
-    {
-        name: "三盾狗的护甲损坏",
-        description: "三盾狗在测试新盾牌时发生爆炸，碎片划伤了你的护甲",
-        effect: "armor_decrease",
-        amount: Math.floor(Math.random() * 21) + 10,
-        icon: "🐕"
-    },
-    {
-        name: "M14大人的装备检查",
-        description: "M14大人检查你的装备时发现护甲有安全隐患，强制报废了一部分",
-        effect: "armor_decrease",
-        amount: Math.floor(Math.random() * 21) + 10,
-        icon: "🔫"
-    },
-    // 生命恢复相关事件 - 调整为10-100范围
-    {
-        name: "奇怪的静步男",
-        description: "幽默静步男尾随你时被你发现，他丢下一个医疗包后就跑了",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 31) + 10,
-        icon: "🏥"
-    },
-    {
-        name: "露娜的电击治疗",
-        description: "露娜用她的电箭为你提供了电击治疗，你感觉人好多了就是有点麻",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 31) + 10,
-        icon: "⚡"
-    },
-    {
-        name: "威龙的飞越",
-        description: "威龙喷射飞越雷区时被炸死了，你在他盒子里找到了个医疗包",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "⚡"
-    },
-    {
-        name: "麦晓雯的飞针",
-        description: "麦晓雯向你丢飞刀的时候不小心把医疗针丢了过来，扎到了你",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 21) + 10,
-        icon: "🍀"
-    },
-    {
-        name: "免费的空投",
-        description: "一个空投箱突然掉在你面前，但是里面只有一个医疗针",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 31) + 10,
-        icon: "🚁"
-    },
-    {
-        name: "佐娅的免费医疗包",
-        description: "佐娅说她包里装满了医疗包，但是护航大哥都死了，用不上了，分你一些",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 71) + 10,
-        icon: "🛡️"
-    },
-    {
-        name: "失足的天才少年",
-        description: "天才少年想刀死鳄鱼被咬死了，你在他包里找到了个医疗包",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 61) + 10,
-        icon: "🐊"
-    },
-    {
-        name: "红狼的滑铲",
-        description: "红狼滑铲的时候裤子磨破了，掉了一个医疗针被你捡了",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 21) + 10,
-        icon: "🎒"
-    },
-    {
-        name: "疾风的自救教学",
-        description: "疾风教会你按自己的人中进行自救，发现还挺管用",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "💨"
-    },
-    {
-        name: "渡鸦的烟雾弹",
-        description: "你不小心吸入了渡鸦的烟雾昏过去了，醒来后发现人精神多了",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 51) + 10,
-        icon: "🔗"
-    },
-    {
-        name: "赛伊德的追击",
-        description: "赛伊德追着你在行政楼跑了10圈，今日份健身达标了",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 31) + 10,
-        icon: "✨"
-    },
-    {
-        name: "老黑的祖传药膏",
-        description: "老黑拿出祖传的秘制药膏，虽然味道难闻但效果立竿见影",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 41) + 10,
-        icon: "🧴"
-    },
-    {
-        name: "跑刀仔的绷带",
-        description: "你偶遇了一个跑刀仔，跑刀仔给你磕了3个头，并丢下了一个绷带",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 21) + 10,
-        icon: "🩹"
-    },
-    {
-        name: "清图主播队的人道救援",
-        description: "清图主播队看你可怜，给你扔了一个高级医疗包",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 91) + 10,
-        icon: "📺"
-    },
-    {
-        name: "巅峰5000星威龙的医疗包",
-        description: "你不小心修脚修死了一个巅峰5000星威龙，但盒子里只有一个医疗包",
-        effect: "health_increase",
-        amount: Math.floor(Math.random() * 61) + 10,
-        icon: "⭐"
-    }
-];
 
 // 三角洲行动真实非武器类道具数据库（按品质分类）
-const itemDatabase = {
-    red: [  // 红色品质 - 最高级
-        { name: "海洋之泪", icon: "💎", value: 22133018, rarity: "红色" },
-        { name: "非洲之心", icon: "❤️", value: 13246682, rarity: "红色" },
-        { name: "复苏呼吸机", icon: "🫁", value: 10632071, rarity: "红色" },
-        { name: "“纵横”", icon: "🎴", value: 3529894, rarity: "红色" },
-        { name: "万金泪冠", icon: "👑", value: 3494923, rarity: "红色" },
-        { name: "微型反应炉", icon: "⚛️", value: 3297503, rarity: "红色" },
-        { name: "装甲车电池", icon: "🔋", value: 2622385, rarity: "红色" },
-        { name: "强化碳纤维板", icon: "🛡️", value: 2333393, rarity: "红色" },
-        { name: "ECMO", icon: "🫀", value: 2292682, rarity: "红色" },
-        { name: "主战坦克模型", icon: "🚜", value: 2116800, rarity: "红色" },
-        { name: "便携军用雷达", icon: "📡", value: 2096445, rarity: "红色" },
-        { name: "绝密服务器", icon: "💾", value: 2052267, rarity: "红色" },
-        { name: "扫拖一体机器人", icon: "🤖", value: 2004117, rarity: "红色" },
-        { name: "曼德尔超算单元", icon: "💻", value: 2003336, rarity: "红色" },
-        { name: "高速磁盘阵列", icon: "💾", value: 1676868, rarity: "红色" },
-        { name: "动力电池组", icon: "🔋", value: 1658498, rarity: "红色" },
-        { name: "强力吸尘器", icon: "🧹", value: 1527101, rarity: "红色" },
-        { name: "飞行记录仪", icon: "✈️", value: 1504167, rarity: "红色" },
-        { name: "笔记本电脑", icon: "💻", value: 1492369, rarity: "红色" },
-        { name: "云存储阵列", icon: "☁️", value: 1450915, rarity: "红色" }
-    ],
-    
-    gold: [  // 金色品质 - 史诗级
-        { name: "心灵感应.魔方", icon: "🧊", value: 184281, rarity: "金色" },
-        { name: "赛伊德的手弩", icon: "🏹", value: 179457, rarity: "金色" },
-        { name: "可编程处理器", icon: "💻", value: 168647, rarity: "金色" },
-        { name: "珠宝头冠", icon: "👑", value: 143797, rarity: "金色" },
-        { name: "军用炸药", icon: "💣", value: 130448, rarity: "金色" },
-        { name: "单反相机", icon: "📷", value: 129007, rarity: "金色" },
-        { name: "军用望远镜", icon: "🔭", value: 94147, rarity: "金色" },
-        { name: "雷斯的乐谱本", icon: "🎼", value: 92531, rarity: "金色" },
-        { name: "紫外线灯", icon: "💡", value: 91741, rarity: "金色" },
-        { name: "军用弹道计算机", icon: "💻", value: 91261, rarity: "金色" },
-        { name: "阵列服务器", icon: "💻", value: 1105880, rarity: "金色" },
-        { name: "大型电台", icon: "📻", value: 694982, rarity: "金色" },
-        { name: "移动电缆", icon: "🔌", value: 441339, rarity: "金色" },
-        { name: "本地特色首饰", icon: "💍", value: 387429, rarity: "金色" },
-        { name: "燃料电池", icon: "🔋", value: 369128, rarity: "金色" },
-        { name: "脑机relink医疗报告", icon: "🧠", value: 350982, rarity: "金色" },
-        { name: "镜头", icon: "📷", value: 256449, rarity: "金色" },
-        { name: "盒装挂耳咖啡", icon: "☕", value: 218606, rarity: "金色" },
-        { name: "军用卫星通讯仪", icon: "📡", value: 212185, rarity: "金色" },
-        { name: "座钟", icon: "🕰️", value: 202127, rarity: "金色" }
-    ],
-    
-    purple: [  // 紫色品质 - 稀有级
-        { name: "马赛克灯台", icon: "💡", value: 115910, rarity: "紫色" },
-        { name: "仪典匕首", icon: "🗡️", value: 104828, rarity: "紫色" },
-        { name: "电动车电池", icon: "🔋", value: 86962, rarity: "紫色" },
-        { name: "军用热像仪", icon: "📡", value: 69879, rarity: "紫色" },
-        { name: "人工膝关节", icon: "🦵", value: 61325, rarity: "紫色" },
-        { name: "离心机", icon: "🌀", value: 59802, rarity: "紫色" },
-        { name: "聚乙烯纤维", icon: "🧵", value: 59602, rarity: "紫色" },
-        { name: "生化培养箱", icon: "🧫", value: 55795, rarity: "紫色" },
-        { name: "广角镜头", icon: "📷", value: 53438, rarity: "紫色" },
-        { name: "特种钢", icon: "⚙️", value: 52618, rarity: "紫色" },
-        { name: "自旋型手锯", icon: "🪚", value: 48586, rarity: "紫色" },
-        { name: "ASOS电脑主板", icon: "💻", value: 46721, rarity: "紫色" },
-        { name: "已损坏的热像仪", icon: "📡", value: 46585, rarity: "紫色" },
-        { name: "加密路由器", icon: "📶", value: 45953, rarity: "紫色" },
-        { name: "军用露营灯", icon: "💡", value: 44886, rarity: "紫色" },
-        { name: "高出力粉碎钳", icon: "🔧", value: 40242, rarity: "紫色" },
-        { name: "胶囊咖啡机套组", icon: "☕", value: 38415, rarity: "紫色" },
-        { name: "血压仪", icon: "🩸", value: 37635, rarity: "紫色" },
-        { name: "阿萨拉特色提灯", icon: "💡", value: 35816, rarity: "紫色" },
-        { name: "专业声卡", icon: "🎚️", value: 34056, rarity: "紫色" }
-    ],
-    
-    blue: [  // 蓝色品质 - 精良级
-        { name: "一桶油漆", icon: "🎨", value: 21419, rarity: "蓝色" },
-        { name: "初级子弹生产零件", icon: "🔧", value: 19952, rarity: "蓝色" },
-        { name: "骨锯", icon: "🪚", value: 19908, rarity: "蓝色" },
-        { name: "火药", icon: "💣", value: 19568, rarity: "蓝色" },
-        { name: "电子温度计", icon: "🌡️", value: 17384, rarity: "蓝色" },
-        { name: "枪械零件", icon: "🔫", value: 16947, rarity: "蓝色" },
-        { name: "军用罐头", icon: "🥫", value: 16750, rarity: "蓝色" },
-        { name: "听诊器", icon: "🩺", value: 16584, rarity: "蓝色" },
-        { name: "阿萨拉时尚周刊", icon: "📰", value: 16569, rarity: "蓝色" },
-        { name: "情报文件", icon: "📂", value: 15348, rarity: "蓝色" },
-        { name: "一包水泥", icon: "🧱", value: 50650, rarity: "蓝色" },
-        { name: "医疗无人机", icon: "🚁", value: 33513, rarity: "蓝色" },
-        { name: "太阳能板", icon: "☀️", value: 31877, rarity: "蓝色" },
-        { name: "无线便携电钻", icon: "🔧", value: 30233, rarity: "蓝色" },
-        { name: "军情录音", icon: "📼", value: 28370, rarity: "蓝色" },
-        { name: "机械破障锤", icon: "🔨", value: 27986, rarity: "蓝色" },
-        { name: "液晶显示屏", icon: "📺", value: 24067, rarity: "蓝色" },
-        { name: "芳纶纤维", icon: "🧵", value: 23675, rarity: "蓝色" },
-        { name: "轻型户外炉具", icon: "🔥", value: 22802, rarity: "蓝色" },
-        { name: "燃气罐", icon: "⛽", value: 21555, rarity: "蓝色" }
-    ],
-    
-    green: [  // 绿色品质 - 普通级
-        { name: "注射器", icon: "💉", value: 19929, rarity: "绿色" },
-        { name: "石工锤", icon: "🔨", value: 12945, rarity: "绿色" },
-        { name: "手锯", icon: "🪚", value: 12131, rarity: "绿色" },
-        { name: "调料套组", icon: "🧂", value: 6778, rarity: "绿色" },
-        { name: "阿萨拉特色陶瓷", icon: "🏺", value: 5855, rarity: "绿色" },
-        { name: "阿萨拉新闻周刊", icon: "📰", value: 5812, rarity: "绿色" },
-        { name: "电源", icon: "🔌", value: 5725, rarity: "绿色" },
-        { name: "袋装咖啡豆", icon: "☕", value: 5358, rarity: "绿色" },
-        { name: "太阳碟", icon: "☀️", value: 5229, rarity: "绿色" },
-        { name: "古老的斯芬克斯像", icon: "🗿", value: 5056, rarity: "绿色" },
-        { name: "阿萨拉娱乐月刊", icon: "📰", value: 5032, rarity: "绿色" },
-        { name: "私密笔记簿", icon: "📓", value: 4832, rarity: "绿色" },
-        { name: "酒店宣传海报", icon: "🖼️", value: 4732, rarity: "绿色" },
-        { name: "签章联运单", icon: "📃", value: 4428, rarity: "绿色" },
-        { name: "非洲鼓", icon: "🥁", value: 4270, rarity: "绿色" },
-        { name: "水平仪", icon: "📏", value: 4225, rarity: "绿色" },
-        { name: "非洲木雕", icon: "🗿", value: 4174, rarity: "绿色" },
-        { name: "压力计", icon: "📊", value: 4114, rarity: "绿色" },
-        { name: "原木木板", icon: "🪵", value: 4024, rarity: "绿色" },
-        { name: "电动爆破锤", icon: "🔨", value: 4009, rarity: "绿色" }
-    ],
-    
-    white: [  // 白色品质 - 最低级
-        { name: "扑克牌-小王", icon: "🃏", value: 13975, rarity: "白色" },
-        { name: "扑克牌-大王", icon: "🃏", value: 13517, rarity: "白色" },
-        { name: "羊角锤", icon: "🔨", value: 3632, rarity: "白色" },
-        { name: "一盒钉子", icon: "📦", value: 2663, rarity: "白色" },
-        { name: "直角尺", icon: "📐", value: 2586, rarity: "白色" },
-        { name: "工具刀", icon: "🔪", value: 2292, rarity: "白色" },
-        { name: "盒装蜡烛", icon: "🕯️", value: 2263, rarity: "白色" },
-        { name: "含氟牙膏", icon: "🦷", value: 2158, rarity: "白色" },
-        { name: "人像照片", icon: "🖼️", value: 2053, rarity: "白色" },
-        { name: "军情照片", icon: "🖼️", value: 2052, rarity: "白色" },
-        { name: "样本试管", icon: "🧪", value: 1981, rarity: "白色" },
-        { name: "当地小报", icon: "📰", value: 1854, rarity: "白色" },
-        { name: "胡椒瓶", icon: "🧂", value: 1768, rarity: "白色" },
-        { name: "油漆刷", icon: "🖌️", value: 1302, rarity: "白色" },
-        { name: "布基胶带", icon: "📼", value: 1215, rarity: "白色" },
-        { name: "外科手套", icon: "🧤", value: 1118, rarity: "白色" },
-        { name: "精密工具组", icon: "🛠️", value: 1082, rarity: "白色" }
-    ]
-};
 
 // DOM元素 - 更新元素引用，添加玩家状态元素
 const elements = {
@@ -1871,320 +952,8 @@ let upgradeSystem = {
 };
 
 // 替换原有的upgradeRequirements配置 - 根据品质等级重新分配物品
-const upgradeRequirements = {
-    health: [
-        // 等级1 - 白色品质物品
-        [
-            { item: '扑克牌-小王', icon: '🃏', count: 2, rarity: 'white' },
-            { item: '羊角锤', icon: '🔨', count: 1, rarity: 'white' },
-            { item: '一盒钉子', icon: '📦', count: 3, rarity: 'white' }
-        ],
-        // 等级2 - 绿色品质物品
-        [
-            { item: '注射器', icon: '💉', count: 2, rarity: 'green' },
-            { item: '石工锤', icon: '🔨', count: 1, rarity: 'green' },
-            { item: '手锯', icon: '🪚', count: 1, rarity: 'green' }
-        ],
-        // 等级3 - 绿色品质物品
-        [
-            { item: '调料套组', icon: '🧂', count: 1, rarity: 'green' },
-            { item: '阿萨拉特色陶瓷', icon: '🏺', count: 2, rarity: 'green' },
-            { item: '阿萨拉新闻周刊', icon: '📰', count: 2, rarity: 'green' }
-        ],
-        // 等级4 - 蓝色品质物品
-        [
-            { item: '军用罐头', icon: '🥫', count: 2, rarity: 'blue' },
-            { item: '听诊器', icon: '🩺', count: 1, rarity: 'blue' },
-            { item: '阿萨拉时尚周刊', icon: '📰', count: 2, rarity: 'blue' }
-        ],
-        // 等级5 - 蓝色品质物品
-        [
-            { item: '情报文件', icon: '📂', count: 1, rarity: 'blue' },
-            { item: '芳纶纤维', icon: '🧵', count: 2, rarity: 'blue' },
-            { item: '液晶显示屏', icon: '📺', count: 1, rarity: 'blue' }
-        ],
-        // 等级6 - 紫色品质物品
-        [
-            { item: '军用热像仪', icon: '📡', count: 1, rarity: 'purple' },
-            { item: '人工膝关节', icon: '🦵', count: 1, rarity: 'purple' },
-            { item: '离心机', icon: '🌀', count: 1, rarity: 'purple' }
-        ],
-        // 等级7 - 紫色品质物品
-        [
-            { item: '生化培养箱', icon: '🧫', count: 1, rarity: 'purple' },
-            { item: '广角镜头', icon: '📷', count: 1, rarity: 'purple' },
-            { item: '特种钢', icon: '⚙️', count: 2, rarity: 'purple' }
-        ],
-        // 等级8 - 金色品质物品（使用itemDatabase中的金色物品）
-        [
-            { item: '心灵感应.魔方', icon: '🧊', count: 1, rarity: 'gold' },
-            { item: '赛伊德的手弩', icon: '🏹', count: 1, rarity: 'gold' },
-            { item: '可编程处理器', icon: '💻', count: 1, rarity: 'gold' }
-        ],
-        // 等级9 - 红色品质物品（使用itemDatabase中的红色物品）
-        [
-            { item: '微型反应炉', icon: '⚛️', count: 1, rarity: 'red' },
-            { item: '装甲车电池', icon: '🔋', count: 1, rarity: 'red' },
-            { item: '强化碳纤维板', icon: '🛡️', count: 1, rarity: 'red' }
-        ]
-    ],
-    
-    escape: [
-        // 等级1 - 白色品质物品
-        [
-            { item: '扑克牌-大王', icon: '🃏', count: 2, rarity: 'white' },
-            { item: '含氟牙膏', icon: '🦷', count: 1, rarity: 'white' },
-            { item: '人像照片', icon: '🖼️', count: 2, rarity: 'white' }
-        ],
-        // 等级2 - 绿色品质物品
-        [
-            { item: '袋装咖啡豆', icon: '☕', count: 2, rarity: 'green' },
-            { item: '电源', icon: '🔌', count: 1, rarity: 'green' },
-            { item: '太阳碟', icon: '☀️', count: 1, rarity: 'green' }
-        ],
-        // 等级3 - 绿色品质物品
-        [
-            { item: '古老的斯芬克斯像', icon: '🗿', count: 1, rarity: 'green' },
-            { item: '阿萨拉娱乐月刊', icon: '📰', count: 2, rarity: 'green' },
-            { item: '私密笔记簿', icon: '📓', count: 1, rarity: 'green' }
-        ],
-        // 等级4 - 蓝色品质物品
-        [
-            { item: '一桶油漆', icon: '🎨', count: 1, rarity: 'blue' },
-            { item: '初级子弹生产零件', icon: '🔧', count: 2, rarity: 'blue' },
-            { item: '骨锯', icon: '🪚', count: 1, rarity: 'blue' }
-        ],
-        // 等级5 - 蓝色品质物品
-        [
-            { item: '火药', icon: '💣', count: 2, rarity: 'blue' },
-            { item: '电子温度计', icon: '🌡️', count: 1, rarity: 'blue' },
-            { item: '枪械零件', icon: '🔫', count: 2, rarity: 'blue' }
-        ],
-        // 等级6 - 紫色品质物品
-        [
-            { item: '马赛克灯台', icon: '💡', count: 1, rarity: 'purple' },
-            { item: '仪典匕首', icon: '🗡️', count: 1, rarity: 'purple' },
-            { item: '电动车电池', icon: '🔋', count: 1, rarity: 'purple' }
-        ],
-        // 等级7 - 紫色品质物品
-        [
-            { item: '聚乙烯纤维', icon: '🧵', count: 2, rarity: 'purple' },
-            { item: '自旋型手锯', icon: '🪚', count: 1, rarity: 'purple' },
-            { item: '阿萨拉特色提灯', icon: '💡', count: 1, rarity: 'purple' }
-        ],
-        // 等级8 - 金色品质物品（使用itemDatabase中的金色物品）
-        [
-            { item: '珠宝头冠', icon: '👑', count: 1, rarity: 'gold' },
-            { item: '军用炸药', icon: '💣', count: 1, rarity: 'gold' },
-            { item: '单反相机', icon: '📷', count: 1, rarity: 'gold' }
-        ],
-        // 等级9 - 红色品质物品（使用itemDatabase中的红色物品）
-        [
-            { item: '笔记本电脑', icon: '💻', count: 1, rarity: 'red' },
-            { item: '云存储阵列', icon: '☁️', count: 1, rarity: 'red' },
-            { item: '强力吸尘器', icon: '🧹', count: 1, rarity: 'red' }
-        ]
-    ],
-    
-    speed: [
-        // 等级1 - 白色品质物品
-        [
-            { item: '油漆刷', icon: '🖌️', count: 2, rarity: 'white' },
-            { item: '布基胶带', icon: '📼', count: 1, rarity: 'white' },
-            { item: '外科手套', icon: '🧤', count: 3, rarity: 'white' }
-        ],
-        // 等级2 - 绿色品质物品
-        [
-            { item: '电动爆破锤', icon: '🔨', count: 1, rarity: 'green' },
-            { item: '原木木板', icon: '🪵', count: 2, rarity: 'green' },
-            { item: '压力计', icon: '📊', count: 1, rarity: 'green' }
-        ],
-        // 等级3 - 绿色品质物品
-        [
-            { item: '非洲木雕', icon: '🗿', count: 1, rarity: 'green' },
-            { item: '水平仪', icon: '📏', count: 2, rarity: 'green' },
-            { item: '非洲鼓', icon: '🥁', count: 1, rarity: 'green' }
-        ],
-        // 等级4 - 蓝色品质物品
-        [
-            { item: '军用罐头', icon: '🥫', count: 1, rarity: 'blue' },
-            { item: '听诊器', icon: '🩺', count: 2, rarity: 'blue' },
-            { item: '阿萨拉时尚周刊', icon: '📰', count: 1, rarity: 'blue' }
-        ],
-        // 等级5 - 蓝色品质物品
-        [
-            { item: '一包水泥', icon: '🧱', count: 1, rarity: 'blue' },
-            { item: '医疗无人机', icon: '🚁', count: 1, rarity: 'blue' },
-            { item: '太阳能板', icon: '☀️', count: 1, rarity: 'blue' }
-        ],
-        // 等级6 - 紫色品质物品
-        [
-            { item: 'ASOS电脑主板', icon: '💻', count: 1, rarity: 'purple' },
-            { item: '已损坏的热像仪', icon: '📡', count: 1, rarity: 'purple' },
-            { item: '加密路由器', icon: '📶', count: 1, rarity: 'purple' }
-        ],
-        // 等级7 - 紫色品质物品
-        [
-            { item: '军用露营灯', icon: '💡', count: 1, rarity: 'purple' },
-            { item: '高出力粉碎钳', icon: '🔧', count: 2, rarity: 'purple' },
-            { item: '胶囊咖啡机套组', icon: '☕', count: 1, rarity: 'purple' }
-        ],
-        // 等级8 - 金色品质物品（使用itemDatabase中的金色物品）
-        [
-            { item: '军用望远镜', icon: '🔭', count: 1, rarity: 'gold' },
-            { item: '雷斯的乐谱本', icon: '🎼', count: 1, rarity: 'gold' },
-            { item: '紫外线灯', icon: '💡', count: 1, rarity: 'gold' }
-        ],
-        // 等级9 - 红色品质物品（使用itemDatabase中的红色物品）
-        [
-            { item: '曼德尔超算单元', icon: '💻', count: 1, rarity: 'red' },
-            { item: '高速磁盘阵列', icon: '💾', count: 1, rarity: 'red' },
-            { item: '动力电池组', icon: '🔋', count: 1, rarity: 'red' }
-        ]
-    ],
-    
-    enemy: [
-        // 等级1 - 白色品质物品
-        [
-            { item: '样本试管', icon: '🧪', count: 2, rarity: 'white' },
-            { item: '盒装蜡烛', icon: '🕯️', count: 3, rarity: 'white' },
-            { item: '直角尺', icon: '📐', count: 1, rarity: 'white' }
-        ],
-        // 等级2 - 绿色品质物品
-        [
-            { item: '酒店宣传海报', icon: '🖼️', count: 1, rarity: 'green' },
-            { item: '签章联运单', icon: '📃', count: 2, rarity: 'green' },
-            { item: '阿萨拉新闻周刊', icon: '📰', count: 1, rarity: 'green' }
-        ],
-        // 等级3 - 绿色品质物品
-        [
-            { item: '电源', icon: '🔌', count: 1, rarity: 'green' },
-            { item: '袋装咖啡豆', icon: '☕', count: 2, rarity: 'green' },
-            { item: '手锯', icon: '🪚', count: 1, rarity: 'green' }
-        ],
-        // 等级4 - 蓝色品质物品
-        [
-            { item: '无线便携电钻', icon: '🔧', count: 1, rarity: 'blue' },
-            { item: '军情录音', icon: '📼', count: 2, rarity: 'blue' },
-            { item: '机械破障锤', icon: '🔨', count: 1, rarity: 'blue' }
-        ],
-        // 等级5 - 蓝色品质物品
-        [
-            { item: '轻型户外炉具', icon: '🔥', count: 2, rarity: 'blue' },
-            { item: '燃气罐', icon: '⛽', count: 1, rarity: 'blue' },
-            { item: '液晶显示屏', icon: '📺', count: 1, rarity: 'blue' }
-        ],
-        // 等级6 - 紫色品质物品
-        [
-            { item: '血压仪', icon: '🩸', count: 1, rarity: 'purple' },
-            { item: '专业声卡', icon: '🎚️', count: 1, rarity: 'purple' },
-            { item: '离心机', icon: '🌀', count: 2, rarity: 'purple' }
-        ],
-        // 等级7 - 紫色品质物品
-        [
-            { item: '特种钢', icon: '⚙️', count: 1, rarity: 'purple' },
-            { item: '自旋型手锯', icon: '🪚', count: 1, rarity: 'purple' },
-            { item: '广角镜头', icon: '📷', count: 1, rarity: 'purple' }
-        ],
-        // 等级8 - 金色品质物品（使用itemDatabase中的金色物品）
-        [
-            { item: '军用弹道计算机', icon: '💻', count: 1, rarity: 'gold' },
-            { item: '阵列服务器', icon: '💻', count: 1, rarity: 'gold' },
-            { item: '大型电台', icon: '📻', count: 1, rarity: 'gold' }
-        ],
-        // 等级9 - 红色品质物品（使用itemDatabase中的红色物品）
-        [
-            { item: '主战坦克模型', icon: '🚜', count: 1, rarity: 'red' },
-            { item: '便携军用雷达', icon: '📡', count: 1, rarity: 'red' },
-            { item: '绝密服务器', icon: '💾', count: 1, rarity: 'red' }
-        ]
-    ],
-    
-    warehouse: [
-        // 等级1 - 白色品质物品
-        [
-            { item: '工具刀', icon: '🔪', count: 2, rarity: 'white' },
-            { item: '精密工具组', icon: '🛠️', count: 1, rarity: 'white' },
-            { item: '当地小报', icon: '📰', count: 3, rarity: 'white' }
-        ],
-        // 等级2 - 绿色品质物品
-        [
-            { item: '胡椒瓶', icon: '🧂', count: 2, rarity: 'green' },
-            { item: '太阳碟', icon: '☀️', count: 1, rarity: 'green' },
-            { item: '古老的斯芬克斯像', icon: '🗿', count: 1, rarity: 'green' }
-        ],
-        // 等级3 - 绿色品质物品
-        [
-            { item: '阿萨拉娱乐月刊', icon: '📰', count: 1, rarity: 'green' },
-            { item: '私密笔记簿', icon: '📓', count: 2, rarity: 'green' },
-            { item: '压力计', icon: '📊', count: 1, rarity: 'green' }
-        ],
-        // 等级4 - 蓝色品质物品
-        [
-            { item: '情报文件', icon: '📂', count: 1, rarity: 'blue' },
-            { item: '芳纶纤维', icon: '🧵', count: 1, rarity: 'blue' },
-            { item: '电子温度计', icon: '🌡️', count: 2, rarity: 'blue' }
-        ],
-        // 等级5 - 蓝色品质物品
-        [
-            { item: '火药', icon: '💣', count: 1, rarity: 'blue' },
-            { item: '枪械零件', icon: '🔫', count: 2, rarity: 'blue' },
-            { item: '初级子弹生产零件', icon: '🔧', count: 1, rarity: 'blue' }
-        ],
-        // 等级6 - 紫色品质物品
-        [
-            { item: '聚乙烯纤维', icon: '🧵', count: 1, rarity: 'purple' },
-            { item: '生化培养箱', icon: '🧫', count: 1, rarity: 'purple' },
-            { item: '广角镜头', icon: '📷', count: 1, rarity: 'purple' }
-        ],
-        // 等级7 - 紫色品质物品
-        [
-            { item: '军用热像仪', icon: '📡', count: 1, rarity: 'purple' },
-            { item: '人工膝关节', icon: '🦵', count: 1, rarity: 'purple' },
-            { item: '离心机', icon: '🌀', count: 2, rarity: 'purple' }
-        ],
-        // 等级8 - 金色品质物品
-        [
-            { item: '移动电缆', icon: '🔌', count: 1, rarity: 'gold' },
-            { item: '本地特色首饰', icon: '💍', count: 1, rarity: 'gold' },
-            { item: '燃料电池', icon: '🔋', count: 1, rarity: 'gold' }
-        ],
-        // 等级9 - 红色品质物品
-        [
-            { item: '海洋之泪', icon: '💎', count: 1, rarity: 'red' },
-            { item: '非洲之心', icon: '❤️', count: 1, rarity: 'red' },
-            { item: '复苏呼吸机', icon: '🫁', count: 1, rarity: 'red' }
-        ]
-    ]
-};
 
 // 配装系统 - 新增
-const gearData = {
-    weapons: [
-        { name: "G18", icon: "🔫", attack: 5, speed: -2, cost: 10000, rarity: "普通", color: "text-gray-400" },
-        { name: "野牛", icon: "🔫", attack: 8, speed: -3, cost: 20000, rarity: "优秀", color: "text-green-400" },
-        { name: "CAR-15", icon: "🔫", attack: 12, speed: -5, cost: 40000, rarity: "稀有", color: "text-blue-400" },
-        { name: "AUG", icon: "🔫", attack: 18, speed: -7, cost: 80000, rarity: "史诗", color: "text-purple-400" },
-        { name: "高配M250", icon: "🔫", attack: 25, speed: -10, cost: 150000, rarity: "传说", color: "text-yellow-400" },
-        { name: "满改M14", icon: "🔫", attack: 35, speed: -15, cost: 300000, rarity: "神话", color: "text-red-400" }
-    ],
-    armors: [
-        { name: "户外棒球帽", icon: "🧢", defense: 10, speed: -2, cost: 15000, rarity: "普通", color: "text-gray-400" },
-        { name: "通用战术背心", icon: "🦺", defense: 20, speed: -4, cost: 30000, rarity: "优秀", color: "text-green-400" },
-        { name: "制式防弹背心", icon: "🛡️", defense: 35, speed: -6, cost: 60000, rarity: "稀有", color: "text-blue-400" },
-        { name: "突击手防弹背心", icon: "🛡️", defense: 55, speed: -8, cost: 120000, rarity: "史诗", color: "text-purple-400" },
-        { name: "FS复合防弹衣", icon: "🛡️", defense: 80, speed: -12, cost: 250000, rarity: "传说", color: "text-yellow-400" },
-        { name: "泰坦防弹装甲", icon: "🛡️", defense: 120, speed: -15, cost: 500000, rarity: "神话", color: "text-red-400" }
-    ],
-    backpacks: [
-        { name: "斜挎包", icon: "👜", capacity: 4, speed: -1, cost: 10000, rarity: "普通", color: "text-gray-400" },
-        { name: "轻型户外背包", icon: "🎒", capacity: 6, speed: -2, cost: 20000, rarity: "优秀", color: "text-green-400" },
-        { name: "GA野战背包", icon: "🎒", capacity: 8, speed: -3, cost: 40000, rarity: "稀有", color: "text-blue-400" },
-        { name: "D2战术登山包", icon: "🎒", capacity: 12, speed: -4, cost: 80000, rarity: "史诗", color: "text-purple-400" },
-        { name: "HLS-2重型背包", icon: "🎒", capacity: 16, speed: -6, cost: 160000, rarity: "传说", color: "text-yellow-400" },
-        { name: "GTO重型战术包", icon: "🎒", capacity: 20, speed: -8, cost: 320000, rarity: "神话", color: "text-red-400" }
-    ]
-};
 
 // 当前装备状态
 let currentGear = {
@@ -2786,18 +1555,6 @@ function giveAllUpgradeItems() {
     }
 }
 
-// 根据品质获取道具价值的辅助函数
-function getItemValueByRarity(rarity) {
-    switch(rarity) {
-        case 'white': return 100;
-        case 'green': return 300;
-        case 'blue': return 800;
-        case 'purple': return 2000;
-        case 'red': return 5000;
-        default: return 100;
-    }
-}
-
 // 修改升级能力函数，修复道具消耗逻辑
 function upgradeAbility(ability) {
     const config = upgradeSystem[ability];
@@ -3064,26 +1821,37 @@ function removeDynamicOverlays() {
 
 // 清除所有动态创建的弹窗覆盖层
 function removeAllDynamicModals() {
+    // 已知需要保留的 HTML 预定义元素 ID 列表
     const preserveIds = new Set([
         'loading-screen', 'helicopter-animation', 'tip-container', 
         'effect-layer', 'item-glow', 'item-modal', 'settings-modal', 
         'upgrade-modal', 'weapon-modal', 'armor-modal', 'backpack-modal', 
         'collection-modal'
     ]);
+    
+    // 遍历 body 的所有直接子元素，移除动态创建的覆盖层
     const bodyChildren = Array.from(document.body.children);
     bodyChildren.forEach(el => {
+        // 跳过 script、link、style、header、noscript 等非可视标签
         const tag = el.tagName.toLowerCase();
         if (tag === 'script' || tag === 'link' || tag === 'style' || tag === 'header' || tag === 'noscript') return;
+        // 跳过已知需要保留的元素
         if (el.id && preserveIds.has(el.id)) return;
+        // 跳过主内容区域
         if (el.classList.contains('max-w-6xl') || el.classList.contains('max-w-4xl')) return;
+        
+        // 移除所有动态创建的 div 覆盖层（它们都是直接 appendChild 到 body 的）
         if (tag === 'div' && !el.id) {
             el.remove();
             return;
         }
+        // 额外检查：有 fixed 定位的元素也要移除
         if (el.classList.contains('fixed')) {
             el.remove();
         }
     });
+    
+    // 同时确保 HTML 中预定义的弹窗被隐藏
     const predefinedModals = ['item-modal', 'settings-modal', 'upgrade-modal', 
                               'weapon-modal', 'armor-modal', 'backpack-modal', 'collection-modal'];
     predefinedModals.forEach(id => {
@@ -3094,63 +1862,64 @@ function removeAllDynamicModals() {
 
 // 修改showInterface函数，添加随机距离初始化
 function showInterface(interfaceName) {
-    currentInterface = interfaceName;
-    
-    // 清除所有动态弹窗，防止残留覆盖层阻挡点击
-    removeAllDynamicModals();
-    
-    // 获取版权信息元素
-    const copyrightElement = document.querySelector('.max-w-6xl.mx-auto.mt-4.text-center');
-    // 获取标题元素
-    const titleElement = document.querySelector('h1.text-4xl.font-bold.text-center.mb-8');
-    
-    if (interfaceName === 'special-forces') {
-        interfaceElements.specialForces.classList.remove('hidden');
-        interfaceElements.zeroDam.classList.add('hidden');
+    try {
+        currentInterface = interfaceName;
         
-        // 显示版权信息
-        if (copyrightElement) {
-            copyrightElement.classList.remove('hidden');
-        }
+        // 清除所有动态弹窗，防止残留覆盖层阻挡点击
+        removeAllDynamicModals();
         
-        // 显示标题
-        if (titleElement) {
-            titleElement.classList.remove('hidden');
-        }
+        // 获取版权信息元素
+        const copyrightElement = document.querySelector('.max-w-6xl.mx-auto.mt-4.text-center');
+        // 获取标题元素
+        const titleElement = document.querySelector('h1.text-4xl.font-bold.text-center.mb-8');
         
-        // 停止环境音效
-        soundManager.stopAmbientSound();
-        
-        // 在特勤处界面时，清空背包内容
-        gameState.items = [];
-        gameState.backpackCoins = 0;
-        // 重置距离为随机值（1400-1000米）
-        gameState.distance = Math.floor(Math.random() * 401) + 1000;
-        
-        // 重置玩家状态 - 只恢复生命值，保持护甲值不变
-        gameState.player.health = gameState.player.maxHealth;
-        // 保持当前护甲值不变，不重置为0
-        
-        // 切换回特勤处背景（绿黑渐变），保留 font-game 类
-        document.body.className = 'bg-gradient-to-br from-gray-900 via-green-900 to-black min-h-screen text-white font-game';
-        
-        // 更新UI
-        updateUI();
-        
-        // 更新装备栏显示
-        updateCurrentGearDisplay();
-        renderItems();
-        renderWarehouse();
-        updateUpgradeUI();
-        updateGearButtons();
-        updateEquipmentCardsState(); // 更新装备卡片状态
-        
-        // 更新音效控制显示状态
-        updateSoundControlsDisplay();
-        
-        // 重新绑定装备卡片点击事件
-        rebindEquipmentClickEvents();
-    } else if (interfaceName === 'zero-dam') {
+        if (interfaceName === 'special-forces') {
+            interfaceElements.specialForces.classList.remove('hidden');
+            interfaceElements.zeroDam.classList.add('hidden');
+            
+            // 显示版权信息
+            if (copyrightElement) {
+                copyrightElement.classList.remove('hidden');
+            }
+            
+            // 显示标题
+            if (titleElement) {
+                titleElement.classList.remove('hidden');
+            }
+            
+            // 停止环境音效
+            soundManager.stopAmbientSound();
+            
+            // 在特勤处界面时，清空背包内容
+            gameState.items = [];
+            gameState.backpackCoins = 0;
+            // 重置距离为随机值（1400-1000米）
+            gameState.distance = Math.floor(Math.random() * 401) + 1000;
+            
+            // 重置玩家状态 - 只恢复生命值，保持护甲值不变
+            gameState.player.health = gameState.player.maxHealth;
+            // 保持当前护甲值不变，不重置为0
+            
+            // 切换回特勤处背景（绿黑渐变），保留 font-game 类
+            document.body.className = 'bg-gradient-to-br from-gray-900 via-green-900 to-black min-h-screen text-white font-game';
+            
+            // 更新UI
+            updateUI();
+            
+            // 更新装备栏显示
+            updateCurrentGearDisplay();
+            renderItems();
+            renderWarehouse();
+            updateUpgradeUI();
+            updateGearButtons();
+            updateEquipmentCardsState(); // 更新装备卡片状态
+            
+            // 更新音效控制显示状态
+            updateSoundControlsDisplay();
+            
+            // 重新绑定装备卡片点击事件，确保返回特勤处后可以正常点击
+            rebindEquipmentClickEvents();
+        } else if (interfaceName === 'zero-dam') {
         interfaceElements.specialForces.classList.add('hidden');
         interfaceElements.zeroDam.classList.remove('hidden');
         
@@ -3190,6 +1959,11 @@ function showInterface(interfaceName) {
         
         // 更新音效控制显示状态
         updateSoundControlsDisplay();
+    }
+    } catch (error) {
+        console.error('[showInterface] Error:', error);
+        // 确保 currentInterface 正确设置
+        currentInterface = interfaceName;
     }
 }
 
@@ -3315,7 +2089,7 @@ function showExitGameConfirmModal() {
 
 // 新增确认退出游戏函数
 function confirmExitGame() {
-    // 关闭确认弹窗（只移除动态创建的弹窗，不移除预定义弹窗）
+    // 关闭确认弹窗（只移除动态弹窗，保留预定义弹窗）
     removeDynamicOverlays();
     
     // 清空背包物品（但保留装备）
@@ -3370,7 +2144,7 @@ function confirmExitGame() {
     
     // 关闭所有动态弹窗（保留预定义弹窗）
     removeDynamicOverlays();
-
+    
     // 关闭道具弹窗
     elements.itemModal.classList.add('hidden');
     
@@ -3400,37 +2174,6 @@ function showExitGameModal() {
                 </p>
                 <button onclick="this.parentElement.parentElement.parentElement.remove(); soundManager.stopAmbientSound(); showInterface('special-forces');" 
                         class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 px-8 py-3 rounded-full font-bold text-lg transition-all transform hover:scale-105">
-                    返回特勤处
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-}
-
-// 修改撤离成功弹窗，添加返回特勤处的逻辑
-function showEvacuationSuccessModal(itemCount, coinAmount, totalValue) {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50';
-    modal.innerHTML = `
-        <div class="bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 rounded-xl p-8 max-w-md w-full mx-4 border-2 border-green-500 shadow-2xl">
-            <div class="text-center">
-                <div class="text-8xl mb-6">🎉</div>
-                <h3 class="text-3xl font-bold mb-4 text-green-400">撤离成功！</h3>
-                <div class="bg-green-800/50 rounded-lg p-4 mb-4">
-                    <p class="text-green-300 text-lg mb-2">
-                        <i class="fas fa-boxes mr-2"></i>成功带出道具: <span class="font-bold text-white">${itemCount}件</span>
-                    </p>
-                    <p class="text-green-300 text-lg mb-2">
-                        <i class="fas fa-coins mr-2"></i>哈夫币: <span class="font-bold text-yellow-400">${coinAmount.toLocaleString()}</span>
-                    </p>
-                    <p class="text-green-300 text-lg">
-                        <i class="fas fa-chart-line mr-2"></i>总价值: <span class="font-bold text-yellow-300 text-2xl">${totalValue.toLocaleString()}哈夫币</span>
-                    </p>
-                </div>
-                <p class="text-gray-300 mb-6">所有战利品已安全转移到仓库！</p>
-                <button onclick="this.parentElement.parentElement.parentElement.remove(); soundManager.stopAmbientSound(); showInterface('special-forces');" 
-                        class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-8 py-3 rounded-full font-bold text-lg transition-all transform hover:scale-105">
                     返回特勤处
                 </button>
             </div>
@@ -3589,8 +2332,8 @@ function sellAllWarehouseItems() {
     let filteredCount = 0;
 
     // 获取当前等级升级材料需求和当前数量
-    const upgradeRequirements = getCurrentLevelUpgradeMaterialRequirements();
-    const upgradeCounts = getCurrentUpgradeMaterialCounts();
+    const localUpgradeReqs = getCurrentLevelUpgradeMaterialRequirements();
+    const localUpgradeCounts = getCurrentUpgradeMaterialCounts();
 
     // 应用筛选条件 - 根据品质筛选
     itemsToSell = itemsToSell.filter(item => {
@@ -3646,8 +2389,8 @@ function sellAllWarehouseItems() {
             }
             
             const materialName = item.name;
-            const requiredCount = upgradeRequirements[materialName] || 0;
-            const currentCount = upgradeCounts[materialName] || 0;
+            const requiredCount = localUpgradeReqs[materialName] || 0;
+            const currentCount = localUpgradeCounts[materialName] || 0;
             const alreadySoldCount = soldUpgradeMaterials[materialName] || 0;
             
             // 计算还可以出售的数量（当前数量 - 所需数量 - 已出售数量）
@@ -4375,9 +3118,8 @@ function executeEvacuationFailure() {
     gameState.backpack.maxSlots = 8;
     gameState.player.speed = 100;
     
-    // 关闭所有弹窗
-    const allModals = document.querySelectorAll('.fixed.inset-0.bg-black\\/70, .fixed.inset-0.bg-black\\/80');
-    allModals.forEach(modal => modal.remove());
+    // 关闭所有动态弹窗（保留预定义弹窗）
+    removeDynamicOverlays();
     
     // 关闭道具弹窗
     elements.itemModal.classList.add('hidden');
@@ -5271,6 +4013,18 @@ window.closeUpgradeModal = function() {
     // 空函数，保持兼容性
 };
 window.upgradeAbility = upgradeAbility;
+window.confirmExitGame = confirmExitGame;
+window.attemptEscape = attemptEscape;
+window.startCombat = startCombat;
+window.executeEvacuationFailure = executeEvacuationFailure;
+window.quickDiscardLowestValueItem = quickDiscardLowestValueItem;
+window.closeInventoryFullNotification = closeInventoryFullNotification;
+window.quickReplaceFromModal = quickReplaceFromModal;
+window.buyGear = buyGear;
+window.equipGear = equipGear;
+window.unequipGear = unequipGear;
+window.GameSave = GameSave;
+window.confirmDeleteSave = confirmDeleteSave;
 
 // 出售当前弹窗中的道具
 window.sellCurrentItem = function() {
@@ -5511,22 +4265,68 @@ function generateRandomGear(type, level) {
 
 // 初始化配装系统
 function initGearSystem() {
-    // 绑定配装按钮事件
-    // document.getElementById('gear-config-btn').addEventListener('click', openGearConfig);
+    // 渲染装备列表到弹窗中
+    renderGearLists();
     
     // 初始化装备显示
     updateGearDisplay();
 }
 
-// 打开配装界面
-function openGearConfig() {
-    document.getElementById('gear-config-modal').classList.remove('hidden');
-    updateCurrentGearDisplay();
-}
+// 渲染武器/护甲/背包列表到对应弹窗
+function renderGearLists() {
+    const weaponList = document.getElementById('weapon-list');
+    if (weaponList) {
+        weaponList.innerHTML = gearData.weapons.map((weapon, index) => `
+            <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${weapon.icon}</span>
+                    <div>
+                        <div class="font-bold ${weapon.color}">${weapon.name}</div>
+                        <div class="text-xs text-gray-400">攻击+${weapon.attack} 速度${weapon.speed} | ${weapon.rarity}</div>
+                    </div>
+                </div>
+                <button onclick="buyGear('weapon', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                    <i class="fas fa-shopping-cart mr-1"></i>${weapon.cost.toLocaleString()}
+                </button>
+            </div>
+        `).join('');
+    }
 
-// 关闭配装界面
-function closeGearConfig() {
-    document.getElementById('gear-config-modal').classList.add('hidden');
+    const armorList = document.getElementById('armor-list');
+    if (armorList) {
+        armorList.innerHTML = gearData.armors.map((armor, index) => `
+            <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${armor.icon}</span>
+                    <div>
+                        <div class="font-bold ${armor.color}">${armor.name}</div>
+                        <div class="text-xs text-gray-400">护甲+${armor.defense} 速度${armor.speed} | ${armor.rarity}</div>
+                    </div>
+                </div>
+                <button onclick="buyGear('armor', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                    <i class="fas fa-shopping-cart mr-1"></i>${armor.cost.toLocaleString()}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    const backpackList = document.getElementById('backpack-list');
+    if (backpackList) {
+        backpackList.innerHTML = gearData.backpacks.map((backpack, index) => `
+            <div class="bg-gray-800/80 rounded-lg p-3 border border-gray-700 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${backpack.icon}</span>
+                    <div>
+                        <div class="font-bold ${backpack.color}">${backpack.name}</div>
+                        <div class="text-xs text-gray-400">容量+${backpack.capacity} 速度${backpack.speed} | ${backpack.rarity}</div>
+                    </div>
+                </div>
+                <button onclick="buyGear('backpack', ${index})" class="w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
+                    <i class="fas fa-shopping-cart mr-1"></i>${backpack.cost.toLocaleString()}
+                </button>
+            </div>
+        `).join('');
+    }
 }
 
 // 添加卸下装备函数
@@ -5591,23 +4391,23 @@ function updateGearButtons() {
                         const repairCost = Math.floor(basePrice * damagePercentage * 0.6);
                         
                         button.innerHTML = `<i class="fas fa-wrench mr-1"></i>维修 ${repairCost.toLocaleString()}`;
-                        button.className = 'w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center';
+                        button.className = 'w-28 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center shrink-0';
                         button.onclick = () => buyGear(type, index); // 复用buyGear函数，内部会检测维修逻辑
                     } else {
                         // 当前已装备且无需维修 - 红色卸下按钮
                         button.innerHTML = '<i class="fas fa-times mr-1"></i>卸下';
-                        button.className = 'w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center';
+                        button.className = 'w-28 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center shrink-0';
                         button.onclick = () => unequipGear(type);
                     }
                 } else if (ownedGear[type].includes(index)) {
                     // 已拥有但未装备 - 蓝色装备按钮
                     button.innerHTML = '<i class="fas fa-check mr-1"></i>装备';
-                    button.className = 'w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center';
+                    button.className = 'w-28 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center shrink-0';
                     button.onclick = () => equipGear(type, index);
                 } else {
                     // 未拥有 - 绿色购买按钮
                     button.innerHTML = `<i class="fas fa-shopping-cart mr-1"></i>${gear.cost.toLocaleString()}`;
-                    button.className = 'w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center';
+                    button.className = 'w-28 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 shadow-md flex items-center justify-center shrink-0';
                     button.onclick = () => buyGear(type, index);
                 }
             }
@@ -6086,7 +4886,7 @@ window.handleEquipmentClick = function(equipmentType) {
     }
 }
 
-// 重新绑定装备卡片的点击事件（防止 inline onclick 失效）
+// 重新绑定装备卡片的点击事件（防止 inline onclick 在某些情况下失效）
 function rebindEquipmentClickEvents() {
     const weaponCard = document.getElementById('weapon-card');
     const armorCard = document.getElementById('armor-card');
